@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>טופס מתקינים — סדן מעליות</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;direction:rtl;background:#f5f5f5;font-size:14px;color:#222}
+.page{max-width:750px;margin:0 auto;padding:1rem}
+.header{background:#fff;border:1px solid #ddd;border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:18px;font-weight:700;color:#333}
+.project-ref{font-size:12px;color:#666;margin-top:4px}
+.connect-box{background:#fff;border:1px solid #ddd;border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem}
+.connect-box h3{font-size:14px;font-weight:700;margin-bottom:0.75rem;color:#444}
+.connect-row{display:flex;gap:10px;align-items:flex-end}
+.connect-field{display:flex;flex-direction:column;gap:4px;flex:1}
+.connect-field label{font-size:12px;color:#666}
+.connect-field input{border:1px solid #ccc;border-radius:4px;padding:7px 10px;font-size:13px;width:100%}
+.connect-field input:focus{outline:none;border-color:#4a90e2}
+.btn-connect{background:#4a90e2;color:#fff;border:none;padding:9px 20px;border-radius:4px;font-size:13px;cursor:pointer;font-weight:600;white-space:nowrap;height:36px}
+.btn-connect:hover{background:#357abd}
+.status{font-size:12px;margin-top:8px;padding:6px 10px;border-radius:4px;display:none}
+.status.success{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;display:block}
+.status.error{background:#ffebee;color:#c62828;border:1px solid #ef9a9a;display:block}
+.status.loading{background:#e3f2fd;color:#1565c0;border:1px solid #90caf9;display:block}
+.section{background:#fff;border:1px solid #ddd;border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem}
+.section-title{font-size:12px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem;padding-bottom:0.5rem;border-bottom:1px solid #eee}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fields.triple{grid-template-columns:1fr 1fr 1fr}
+.field{display:flex;flex-direction:column;gap:3px}
+.field label{font-size:11px;color:#888}
+.field .val{font-size:14px;font-weight:600;color:#222;padding:5px 0;border-bottom:1px solid #eee;min-height:28px}
+.field .val.empty{color:#bbb;font-weight:400;font-style:italic}
+.field .val.editable{background:#f9f9f9;border:1px solid #ddd;border-radius:4px;padding:5px 8px;cursor:text;border-bottom:1px solid #ddd}
+.field .val.editable:focus{outline:none;border-color:#4a90e2;background:#fff}
+.check-list{display:flex;flex-direction:column;gap:0}
+.check-item{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f0f0f0}
+.check-item:last-child{border-bottom:none}
+.check-item label{font-size:14px}
+.toggle{display:flex;gap:6px}
+.toggle-btn{padding:3px 14px;border-radius:20px;border:1px solid #ddd;background:#f5f5f5;color:#666;font-size:12px;cursor:pointer}
+.toggle-btn.yes{background:#e8f5e9;border-color:#a5d6a7;color:#2e7d32;font-weight:600}
+.toggle-btn.no{background:#ffebee;border-color:#ef9a9a;color:#c62828;font-weight:600}
+.floor-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:8px}
+.floor-cell{display:flex;flex-direction:column;align-items:center;gap:3px}
+.floor-cell label{font-size:11px;color:#888}
+.floor-cell input{width:100%;text-align:center;font-size:13px;border:1px solid #ddd;border-radius:4px;padding:5px 2px;background:#f9f9f9}
+.divider{border:none;border-top:1px solid #eee;margin:0.75rem 0}
+.actions{display:flex;gap:10px;margin-top:1rem;padding-top:1rem;border-top:1px solid #ddd}
+.btn-print{flex:1;padding:10px;background:#333;color:#fff;border:none;border-radius:4px;font-size:14px;cursor:pointer;font-weight:600}
+.btn-print:hover{background:#111}
+.btn-reset{padding:10px 16px;background:#fff;color:#666;border:1px solid #ddd;border-radius:4px;font-size:14px;cursor:pointer}
+@media print{
+  .connect-box,.actions{display:none!important}
+  .page{padding:0}
+  .section{border:1px solid #ccc;break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div>
+      <div class="logo">סדן מעליות</div>
+      <div class="project-ref" id="project-ref">טופס מידע למתקינים</div>
+    </div>
+    <div style="text-align:left;font-size:12px;color:#666" id="form-date"></div>
+  </div>
+
+  <div class="connect-box">
+    <h3>טעינת פרויקט מאודו</h3>
+    <div class="connect-row">
+      <div class="connect-field">
+        <label>מספר הזמנה (S00xxx) או מספר פרויקט</label>
+        <input type="text" id="project-ref-input" placeholder="S00224" onkeydown="if(event.key==='Enter')loadProject()">
+      </div>
+      <button class="btn-connect" onclick="loadProject()">טעינה</button>
+    </div>
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">פרטי הפרויקט</div>
+    <div class="fields">
+      <div class="field"><label>שם פרויקט</label><div class="val" id="f-name">—</div></div>
+      <div class="field"><label>לקוח</label><div class="val" id="f-customer">—</div></div>
+      <div class="field"><label>מנהל פרויקט</label><div class="val" id="f-pm">—</div></div>
+      <div class="field"><label>כתובת התקנה</label><div class="val" id="f-address">—</div></div>
+      <div class="field"><label>סוג מתקן</label><div class="val" id="f-type">—</div></div>
+      <div class="field"><label>פנימי / חיצוני</label><div class="val" id="f-location">—</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">נתונים טכניים</div>
+    <div class="fields triple">
+      <div class="field"><label>מספר תחנות</label><div class="val" id="f-stations">—</div></div>
+      <div class="field"><label>מהלך הרמה (מ"מ)</label><div class="val" id="f-travel">—</div></div>
+      <div class="field"><label>עומס מותר (ק"ג)</label><div class="val" id="f-load">—</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">פרטי שטח — ממולאים לפני התקנה</div>
+    <div class="fields">
+      <div class="field"><label>חניה לרכב טכנאי</label><div class="val editable" contenteditable="true" id="f-parking"></div></div>
+      <div class="field"><label>חניית נגרר</label><div class="val editable" contenteditable="true" id="f-trailer"></div></div>
+      <div class="field"><label>איש קשר בשטח</label><div class="val editable" contenteditable="true" id="f-contact"></div></div>
+      <div class="field"><label>הערות</label><div class="val editable" contenteditable="true" id="f-notes"></div></div>
+    </div>
+    <hr class="divider">
+    <div style="font-size:12px;color:#888;margin-bottom:8px;font-weight:700">ציוד לקחת</div>
+    <div class="check-list">
+      <div class="check-item"><label>רגש לחות</label><div class="toggle"><button class="toggle-btn" onclick="tog(this,'yes')">כן</button><button class="toggle-btn" onclick="tog(this,'no')">לא</button></div></div>
+      <div class="check-item"><label>טלפון / חייגן</label><div class="toggle"><button class="toggle-btn" onclick="tog(this,'yes')">כן</button><button class="toggle-btn" onclick="tog(this,'no')">לא</button></div></div>
+      <div class="check-item"><label>מערכת כריזה</label><div class="toggle"><button class="toggle-btn" onclick="tog(this,'yes')">כן</button><button class="toggle-btn" onclick="tog(this,'no')">לא</button></div></div>
+      <div class="check-item"><label>מאצרה</label><div class="toggle"><button class="toggle-btn" onclick="tog(this,'yes')">כן</button><button class="toggle-btn" onclick="tog(this,'no')">לא</button></div></div>
+      <div class="check-item"><label>גישטל</label><div class="toggle"><button class="toggle-btn" onclick="tog(this,'yes')">כן</button><button class="toggle-btn" onclick="tog(this,'no')">לא</button></div></div>
+    </div>
+    <hr class="divider">
+    <div style="font-size:12px;color:#888;margin-bottom:8px;font-weight:700">גובה ריצוף בתחנות (ס"מ)</div>
+    <div class="floor-grid">
+      <div class="floor-cell"><label>תחנה 0</label><input type="number" id="g0"></div>
+      <div class="floor-cell"><label>תחנה 1</label><input type="number" id="g1"></div>
+      <div class="floor-cell"><label>תחנה 2</label><input type="number" id="g2"></div>
+      <div class="floor-cell"><label>תחנה 3</label><input type="number" id="g3"></div>
+      <div class="floor-cell"><label>תחנה 4</label><input type="number" id="g4"></div>
+      <div class="floor-cell"><label>תחנה 5</label><input type="number" id="g5"></div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn-print" onclick="window.print()">🖨️ הדפס / שמור PDF</button>
+    <button class="btn-reset" onclick="resetForm()">נקה</button>
+  </div>
+
+</div>
+
+<script>
+// כתובת ה-Cloudflare Worker (הפרוקסי המאובטח) — לעדכן אחרי שלב ההקמה ב-Cloudflare
+const WORKER_URL = 'https://sadan-installer-proxy.erellaka88.workers.dev';
+
+document.getElementById('form-date').textContent = new Date().toLocaleDateString('he-IL');
+
+function setStatus(msg, type) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status ' + type;
+}
+
+function fillField(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (val && val !== false && String(val).trim()) {
+    el.textContent = Array.isArray(val) ? val[1] : val;
+    el.classList.remove('empty');
+  } else {
+    el.textContent = '—';
+    el.classList.add('empty');
+  }
+}
+
+async function loadProject() {
+  const ref = document.getElementById('project-ref-input').value.trim();
+  if (!ref) { setStatus('הכנס מספר הזמנה (S00xxx) או מספר פרויקט', 'error'); return; }
+
+  setStatus('מתחבר לאודו...', 'loading');
+
+  try {
+    const resp = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ref })
+    });
+
+    const data = await resp.json();
+
+    if (data.error) {
+      setStatus('שגיאה: ' + (data.error.data?.message || data.error.message || JSON.stringify(data.error)), 'error');
+      return;
+    }
+
+    const records = data.result;
+    if (!records || records.length === 0) {
+      setStatus('לא נמצא פרויקט — נסי מספר ID ישיר במקום מספר הזמנה', 'error');
+      return;
+    }
+
+    const p = records[0];
+    fillField('f-name', p.name);
+    fillField('f-customer', p.partner_id);
+    fillField('f-pm', p.user_id);
+    fillField('f-address', p.x_studio_delivery_address);
+    fillField('f-type', p.x_studio_char_field_6hd_1jj930euo);
+    fillField('f-location', p.x_studio_selection_field_8tb_1jipv8tk8);
+    fillField('f-stations', p.x_studio_number_of_stations);
+    fillField('f-travel', p.x_studio_char_field_3bs_1jj931sln);
+    fillField('f-load', p.x_studio_char_field_8hg_1jj939ks1);
+
+    document.getElementById('project-ref').textContent = 'פרויקט: ' + p.name;
+    setStatus('✓ נטען בהצלחה: ' + p.name, 'success');
+
+  } catch(e) {
+    setStatus('שגיאת תקשורת עם השרת — בדקי שכתובת ה-WORKER_URL בקוד עודכנה נכון: ' + e.message, 'error');
+  }
+}
+
+function tog(btn, val) {
+  btn.parentElement.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('yes','no'));
+  btn.classList.add(val);
+}
+
+function resetForm() {
+  ['f-name','f-customer','f-pm','f-address','f-type','f-location','f-stations','f-travel','f-load']
+    .forEach(id => { const el = document.getElementById(id); if(el){ el.textContent='—'; el.classList.add('empty'); } });
+  ['f-parking','f-trailer','f-contact','f-notes'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent=''; });
+  ['g0','g1','g2','g3','g4','g5'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+  document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('yes','no'));
+  document.getElementById('status').className = 'status';
+  document.getElementById('project-ref').textContent = 'טופס מידע למתקינים';
+  document.getElementById('project-ref-input').value = '';
+}
+</script>
+</body>
+</html>
