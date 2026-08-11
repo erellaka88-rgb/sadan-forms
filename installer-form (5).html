@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>טופס מתקינים — סדן מעליות</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{overflow-x:hidden;max-width:100%}
+body{font-family:Arial,sans-serif;direction:rtl;background:#f5f5f5;font-size:16px;color:#222}
+.page{max-width:800px;margin:0 auto;padding:1rem}
+.header{background:#fff;border:1px solid #ddd;border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}
+.logo{font-size:22px;font-weight:700;color:#333}
+.project-banner{background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:0.85rem 1.25rem;margin-bottom:1rem;font-size:19px;font-weight:700;color:#1565c0;text-align:center;display:none}
+.project-banner.show{display:block}
+.connect-box{background:#fff;border:1px solid #ddd;border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem}
+.connect-box h3{font-size:16px;font-weight:700;margin-bottom:0.75rem;color:#444}
+.connect-row{display:flex;gap:10px;align-items:flex-end}
+.connect-field{display:flex;flex-direction:column;gap:4px;flex:1}
+.connect-field label{font-size:13px;color:#666}
+.connect-field input{border:1px solid #ccc;border-radius:4px;padding:8px 10px;font-size:15px;width:100%}
+.connect-field input:focus{outline:none;border-color:#4a90e2}
+.btn-connect{background:#4a90e2;color:#fff;border:none;padding:10px 20px;border-radius:4px;font-size:15px;cursor:pointer;font-weight:600;white-space:nowrap;height:40px}
+.btn-connect:hover{background:#357abd}
+.status{font-size:13px;margin-top:8px;padding:7px 10px;border-radius:4px;display:none}
+.status.success{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;display:block}
+.status.error{background:#ffebee;color:#c62828;border:1px solid #ef9a9a;display:block}
+.status.loading{background:#e3f2fd;color:#1565c0;border:1px solid #90caf9;display:block}
+.section{background:#fff;border:1px solid #ddd;border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem}
+.section-title{font-size:13px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem;padding-bottom:0.5rem;border-bottom:1px solid #eee}
+.subtitle{font-size:13px;color:#888;margin:0.75rem 0 8px;font-weight:700}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fields.triple{grid-template-columns:1fr 1fr 1fr}
+.field{display:flex;flex-direction:column;gap:3px}
+.field label{font-size:12px;color:#888}
+.field .val{font-size:16px;font-weight:600;color:#222;padding:6px 0;border-bottom:1px solid #eee;min-height:30px}
+.field .val.empty{color:#bbb;font-weight:400;font-style:italic}
+.field .val.editable{background:#f9f9f9;border:1px solid #ddd;border-radius:4px;padding:6px 8px;cursor:text;border-bottom:1px solid #ddd}
+.field .val.editable:focus{outline:none;border-color:#4a90e2;background:#fff}
+.field textarea.val.editable{min-height:60px;font-family:inherit;resize:vertical}
+.check-list{display:flex;flex-direction:column;gap:0}
+.check-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0;gap:10px}
+.check-item:last-child{border-bottom:none}
+.check-item label{font-size:15px}
+.toggle{display:flex;gap:6px;flex-wrap:wrap}
+.toggle-btn{padding:5px 14px;border-radius:20px;border:1px solid #ddd;background:#f5f5f5;color:#666;font-size:13px;cursor:pointer}
+.toggle-btn.yes{background:#e8f5e9;border-color:#a5d6a7;color:#2e7d32;font-weight:600}
+.toggle-btn.no{background:#ffebee;border-color:#ef9a9a;color:#c62828;font-weight:600}
+.toggle-btn.selected{background:#e3f2fd;border-color:#90caf9;color:#1565c0;font-weight:600}
+.other-input{margin-top:6px;width:100%;border:1px solid #ddd;border-radius:4px;padding:6px 8px;font-size:14px;background:#f9f9f9;display:none}
+.other-input.show{display:block}
+.floor-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:8px}
+.floor-cell{display:flex;flex-direction:column;align-items:center;gap:3px}
+.floor-cell label{font-size:12px;color:#888}
+.floor-cell input{width:100%;text-align:center;font-size:14px;border:1px solid #ddd;border-radius:4px;padding:6px 2px;background:#f9f9f9}
+.doors-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:8px}
+.doors-cell{display:flex;flex-direction:column;align-items:center;gap:3px}
+.doors-cell label{font-size:12px;color:#888}
+.doors-cell select{width:100%;text-align:center;font-size:14px;border:1px solid #ddd;border-radius:4px;padding:6px 2px;background:#f9f9f9}
+.divider{border:none;border-top:1px solid #eee;margin:0.85rem 0}
+.actions{display:flex;gap:10px;margin-top:1rem;padding-top:1rem;border-top:1px solid #ddd}
+.btn-print{flex:1;padding:12px;background:#333;color:#fff;border:none;border-radius:4px;font-size:16px;cursor:pointer;font-weight:600}
+.btn-print:hover{background:#111}
+.btn-reset{padding:12px 18px;background:#fff;color:#666;border:1px solid #ddd;border-radius:4px;font-size:16px;cursor:pointer}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media print{
+  .connect-box,.actions{display:none!important}
+  .page{padding:0}
+  .section{border:1px solid #ccc;break-inside:avoid}
+}
+@media (max-width:600px){
+  .fields,.fields.triple,.two-col{grid-template-columns:1fr}
+  .floor-grid,.doors-grid{grid-template-columns:repeat(3,1fr)}
+  .field input[type="date"]{width:100%!important;min-width:0;max-width:100%;font-size:14px}
+  .page{padding:0.6rem}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="logo">סדן מעליות — טופס מידע למתקין</div>
+    <div style="text-align:left;font-size:13px;color:#666" id="form-date"></div>
+  </div>
+
+  <div class="project-banner" id="project-ref"></div>
+
+  <div class="connect-box">
+    <h3>טעינת פרויקט מאודו</h3>
+    <div class="connect-row">
+      <div class="connect-field">
+        <label>מספר הזמנה — אפשר להקליד רק מספר (למשל 224) או המלא (S00224)</label>
+        <input type="text" id="project-ref-input" dir="ltr" placeholder="S00224" onkeydown="if(event.key==='Enter')loadProject()">
+      </div>
+      <button class="btn-connect" onclick="loadProject()">טעינה</button>
+    </div>
+    <div class="status" id="status"></div>
+  </div>
+
+  <!-- פרטי הפרויקט (מאודו) -->
+  <div class="section">
+    <div class="section-title">פרטי הפרויקט</div>
+    <div class="fields">
+      <div class="field"><label>שם ומספר הפרויקט</label><div class="val" id="f-name">—</div></div>
+      <div class="field"><label>לקוח</label><div class="val" id="f-customer">—</div></div>
+      <div class="field"><label>מנהל פרויקט</label><div class="val" id="f-pm">—</div></div>
+      <div class="field"><label>כתובת התקנה</label><div class="val" id="f-address">—</div></div>
+      <div class="field"><label>סוג מתקן</label><div class="val" id="f-type">—</div></div>
+      <div class="field"><label>פנימי / חיצוני</label><div class="val" id="f-location">—</div></div>
+      <div class="field"><label>צוות התקנה</label><div class="val editable" contenteditable="true" id="f-crew"></div></div>
+      <div class="field"><label>תאריך התקנה משוער</label><input type="date" class="val editable" id="f-install-date" style="width:100%;max-width:100%;min-width:0"></div>
+    </div>
+  </div>
+
+  <!-- נתונים טכניים (מאודו) -->
+  <div class="section">
+    <div class="section-title">נתונים טכניים</div>
+    <div class="fields triple">
+      <div class="field"><label>מספר תחנות</label><div class="val" id="f-stations">—</div></div>
+      <div class="field"><label>מהלך הרמה (מ"מ)</label><div class="val" id="f-travel">—</div></div>
+      <div class="field"><label>עומס מותר (ק"ג)</label><div class="val" id="f-load">—</div></div>
+    </div>
+  </div>
+
+  <!-- שטח וחניה -->
+  <div class="section">
+    <div class="section-title">שטח וחניה</div>
+    <div class="fields">
+      <div class="field"><label>שם איש קשר בשטח</label><div class="val editable" contenteditable="true" id="f-contact-name"></div></div>
+      <div class="field"><label>טלפון איש קשר</label><div class="val editable" contenteditable="true" id="f-contact-phone" dir="ltr"></div></div>
+    </div>
+    <div class="subtitle">חניה לרכב טכני</div>
+    <div class="toggle" id="grp-parking">
+      <button class="toggle-btn" onclick="selectOpt(this)">חופשי</button>
+      <button class="toggle-btn" onclick="selectOpt(this)">חניון בהסדר</button>
+      <button class="toggle-btn" onclick="selectOpt(this)">בעייתי</button>
+      <button class="toggle-btn" onclick="selectOpt(this,true)">אחר</button>
+    </div>
+    <input type="text" class="other-input" id="f-parking-other" placeholder="אחר — פירוט חופשי...">
+    <div class="subtitle">אפשרות לחניית נגרר</div>
+    <div class="toggle" id="grp-trailer">
+      <button class="toggle-btn" onclick="selectOpt(this)">חופשי</button>
+      <button class="toggle-btn" onclick="selectOpt(this)">בעייתי</button>
+      <button class="toggle-btn" onclick="selectOpt(this)">לפריקה בלבד</button>
+      <button class="toggle-btn" onclick="selectOpt(this,true)">אחר</button>
+    </div>
+    <input type="text" class="other-input" id="f-trailer-other" placeholder="אחר — פירוט חופשי...">
+  </div>
+
+  <!-- פיר וארון פיקוד -->
+  <div class="section">
+    <div class="section-title">פיר וארון פיקוד</div>
+    <div class="subtitle">סוג הפיר</div>
+    <div class="toggle" id="grp-shaft">
+      <button class="toggle-btn" onclick="selectOpt(this)">מתכת לקוח</button>
+      <button class="toggle-btn" onclick="selectOpt(this)">סדן שקוף</button>
+      <button class="toggle-btn" onclick="selectOpt(this)">סדן אטום</button>
+      <button class="toggle-btn" onclick="selectOpt(this)">בטון</button>
+      <button class="toggle-btn" onclick="selectOpt(this,true)">אחר</button>
+    </div>
+    <input type="text" class="other-input" id="f-shaft-other" placeholder="אחר — פירוט חופשי...">
+    <div class="field" style="margin-top:10px"><label>בפיר מודולרי — נדון חיזוקים</label><div class="val editable" contenteditable="true" id="f-shaft-reinforce"></div></div>
+    <div class="two-col" style="margin-top:10px">
+      <div class="field"><label>ארון הפיקוד מרוחק מהמעלון (מטר)</label><div class="val editable" contenteditable="true" id="f-cabinet-distance"></div></div>
+      <div class="field">
+        <label>כיוון המרחק</label>
+        <div class="toggle" id="grp-cabinet-dir">
+          <button class="toggle-btn" onclick="selectOpt(this)">מעלה</button>
+          <button class="toggle-btn" onclick="selectOpt(this)">מטה</button>
+          <button class="toggle-btn" onclick="selectOpt(this,true)">אחר</button>
+        </div>
+        <input type="text" class="other-input" id="f-cabinet-dir-other" placeholder="אחר — פירוט חופשי...">
+      </div>
+    </div>
+    <div class="check-item" style="margin-top:6px">
+      <label>ארון פיקוד מוגן מים</label>
+      <div class="toggle"><button class="toggle-btn" onclick="tog(this,'yes')">כן</button><button class="toggle-btn" onclick="tog(this,'no')">לא</button></div>
+    </div>
+  </div>
+
+  <!-- דלתות -->
+  <div class="section">
+    <div class="section-title">דלתות</div>
+    <div class="subtitle">דלת כנף</div>
+    <div class="toggle" id="grp-door-panel">
+      <button class="toggle-btn" onclick="selectOpt(this)">זכוכית שקופה</button>
+      <button class="toggle-btn" onclick="selectOpt(this)">חלבית</button>
+      <button class="toggle-btn" onclick="selectOpt(this)">מדבקה לאחר מתי"י</button>
+      <button class="toggle-btn" onclick="selectOpt(this)">מתכת</button>
+      <button class="toggle-btn" onclick="selectOpt(this,true)">אחר</button>
+    </div>
+    <input type="text" class="other-input" id="f-door-panel-other" placeholder="אחר — פירוט חופשי...">
+    <div class="subtitle">דלת אוטומטית</div>
+    <div class="toggle" id="grp-door-auto">
+      <button class="toggle-btn" onclick="selectOpt(this)">טלסקופית</button>
+      <button class="toggle-btn" onclick="selectOpt(this)">אוטובוס</button>
+      <button class="toggle-btn" onclick="selectOpt(this,true)">אחר</button>
+    </div>
+    <input type="text" class="other-input" id="f-door-auto-other" placeholder="אחר — פירוט חופשי...">
+    <div class="subtitle">כיווני דלתות בכל תחנה (A / B / C / D)</div>
+    <div class="doors-grid">
+      <div class="doors-cell"><label>תחנה 0</label><select id="d0"><option value="">—</option><option>A</option><option>B</option><option>C</option><option>D</option></select></div>
+      <div class="doors-cell"><label>תחנה 1</label><select id="d1"><option value="">—</option><option>A</option><option>B</option><option>C</option><option>D</option></select></div>
+      <div class="doors-cell"><label>תחנה 2</label><select id="d2"><option value="">—</option><option>A</option><option>B</option><option>C</option><option>D</option></select></div>
+      <div class="doors-cell"><label>תחנה 3</label><select id="d3"><option value="">—</option><option>A</option><option>B</option><option>C</option><option>D</option></select></div>
+      <div class="doors-cell"><label>תחנה 4</label><select id="d4"><option value="">—</option><option>A</option><option>B</option><option>C</option><option>D</option></select></div>
+      <div class="doors-cell"><label>תחנה 5</label><select id="d5"><option value="">—</option><option>A</option><option>B</option><option>C</option><option>D</option></select></div>
+    </div>
+  </div>
+
+  <!-- ציוד וסידורים למתקינים -->
+  <div class="section">
+    <div class="section-title">על המתקינים לקחת</div>
+    <div class="check-list">
+      <div class="check-item"><label>1. רגש לחות</label><div class="toggle"><button class="toggle-btn" onclick="tog(this,'yes')">כן</button><button class="toggle-btn" onclick="tog(this,'no')">לא</button></div></div>
+      <div class="check-item"><label>2. טלפון / חייגן</label><div class="toggle"><button class="toggle-btn" onclick="tog(this,'yes')">כן</button><button class="toggle-btn" onclick="tog(this,'no')">לא</button></div></div>
+      <div class="check-item"><label>3. מערכת כריזה</label><div class="toggle"><button class="toggle-btn" onclick="tog(this,'yes')">כן</button><button class="toggle-btn" onclick="tog(this,'no')">לא</button></div></div>
+      <div class="check-item"><label>4. מאצרה</label><div class="toggle"><button class="toggle-btn" onclick="tog(this,'yes')">כן</button><button class="toggle-btn" onclick="tog(this,'no')">לא</button></div></div>
+      <div class="check-item"><label>5. גישטל</label><div class="toggle"><button class="toggle-btn" onclick="tog(this,'yes')">כן</button><button class="toggle-btn" onclick="tog(this,'no')">לא</button></div></div>
+    </div>
+    <div class="subtitle">6. סוג הלוח</div>
+    <div class="toggle" id="grp-board">
+      <button class="toggle-btn" onclick="selectOpt(this)">VEGA</button>
+      <button class="toggle-btn" onclick="selectOpt(this)">UDEC</button>
+    </div>
+    <div class="check-item" style="margin-top:6px">
+      <label>האם נדרש להתקין פיקוד שבת?</label>
+      <div class="toggle"><button class="toggle-btn" onclick="tog(this,'yes')">כן</button><button class="toggle-btn" onclick="tog(this,'no')">לא</button></div>
+    </div>
+    <div class="subtitle">7. פרופילים להתקנת משקופים</div>
+    <div class="two-col">
+      <div class="field"><label>כמות</label><div class="val editable" contenteditable="true" id="f-profiles-qty"></div></div>
+      <div class="field"><label>מידות</label><div class="val editable" contenteditable="true" id="f-profiles-size"></div></div>
+    </div>
+  </div>
+
+  <!-- גובה ריצוף -->
+  <div class="section">
+    <div class="section-title">גובה ריצוף בתחנות (ס"מ)</div>
+    <div class="floor-grid">
+      <div class="floor-cell"><label>תחנה 0</label><input type="number" id="g0"></div>
+      <div class="floor-cell"><label>תחנה 1</label><input type="number" id="g1"></div>
+      <div class="floor-cell"><label>תחנה 2</label><input type="number" id="g2"></div>
+      <div class="floor-cell"><label>תחנה 3</label><input type="number" id="g3"></div>
+      <div class="floor-cell"><label>תחנה 4</label><input type="number" id="g4"></div>
+      <div class="floor-cell"><label>תחנה 5</label><input type="number" id="g5"></div>
+    </div>
+  </div>
+
+  <!-- הערות -->
+  <div class="section">
+    <div class="section-title">הערות / תוספות מיוחדות</div>
+    <textarea class="val editable" id="f-notes" rows="4" style="width:100%"></textarea>
+  </div>
+
+  <div class="actions">
+    <button class="btn-print" onclick="window.print()">🖨️ הדפס / שמור PDF</button>
+    <button class="btn-reset" onclick="resetForm()">נקה</button>
+  </div>
+
+</div>
+
+<script>
+const WORKER_URL = 'https://sadan-installer-proxy.erellaka88.workers.dev';
+
+document.getElementById('form-date').textContent = new Date().toLocaleDateString('he-IL');
+
+function setStatus(msg, type) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status ' + type;
+}
+
+function fillField(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (val && val !== false && String(val).trim()) {
+    el.textContent = Array.isArray(val) ? val[1] : val;
+    el.classList.remove('empty');
+  } else {
+    el.textContent = '—';
+    el.classList.add('empty');
+  }
+}
+
+async function loadProject() {
+  let ref = document.getElementById('project-ref-input').value.trim().replace(/[^\x20-\x7E]/g, '');
+  if (/^\d+$/.test(ref)) {
+    ref = 'S' + ref.padStart(5, '0');
+  }
+  document.getElementById('project-ref-input').value = ref;
+  if (!ref) { setStatus('הכנס מספר הזמנה (S00xxx) או מספר פרויקט', 'error'); return; }
+
+  setStatus('מתחבר לאודו...', 'loading');
+
+  try {
+    const resp = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ref })
+    });
+
+    const data = await resp.json();
+
+    if (data.error) {
+      setStatus('שגיאה: ' + (data.error.data?.message || data.error.message || JSON.stringify(data.error)), 'error');
+      return;
+    }
+
+    const records = data.result;
+    if (!records || records.length === 0) {
+      setStatus('לא נמצא פרויקט — נסי מספר ID ישיר במקום מספר הזמנה', 'error');
+      return;
+    }
+
+    const p = records[0];
+    fillField('f-name', p.name);
+    fillField('f-customer', p.partner_id);
+    fillField('f-pm', p.user_id);
+    fillField('f-address', p.x_studio_delivery_address);
+    fillField('f-type', p.x_studio_char_field_6hd_1jj930euo);
+    fillField('f-location', p.x_studio_selection_field_8tb_1jipv8tk8);
+    fillField('f-stations', p.x_studio_number_of_stations);
+    fillField('f-travel', p.x_studio_char_field_3bs_1jj931sln);
+    fillField('f-load', p.x_studio_char_field_8hg_1jj939ks1);
+
+    const todayStr = new Date().toLocaleDateString('he-IL');
+    const bannerEl = document.getElementById('project-ref');
+    bannerEl.textContent = p.name + '  —  ' + todayStr;
+    bannerEl.classList.add('show');
+    setStatus('✓ נטען בהצלחה: ' + p.name, 'success');
+
+  } catch(e) {
+    setStatus('שגיאת תקשורת עם השרת — בדקי שכתובת ה-WORKER_URL בקוד עודכנה נכון: ' + e.message, 'error');
+  }
+}
+
+function tog(btn, val) {
+  btn.parentElement.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('yes','no'));
+  btn.classList.add(val);
+}
+
+// בחירה יחידה מתוך קבוצת אפשרויות (סוג פיר, דלתות, חניה וכו')
+function selectOpt(btn, isOther) {
+  const group = btn.parentElement;
+  group.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+
+  // מציאת שדה "אחר" הצמוד (אם קיים) לפי id הקבוצה
+  const otherInput = group.nextElementSibling;
+  if (otherInput && otherInput.classList.contains('other-input')) {
+    if (isOther) {
+      otherInput.classList.add('show');
+      otherInput.focus();
+    } else {
+      otherInput.classList.remove('show');
+      otherInput.value = '';
+    }
+  }
+}
+
+function resetForm() {
+  ['f-name','f-customer','f-pm','f-address','f-type','f-location','f-stations','f-travel','f-load']
+    .forEach(id => { const el = document.getElementById(id); if(el){ el.textContent='—'; el.classList.add('empty'); } });
+  ['f-contact-name','f-contact-phone','f-crew','f-shaft-reinforce','f-cabinet-distance','f-profiles-qty','f-profiles-size']
+    .forEach(id => { const el = document.getElementById(id); if(el) el.textContent=''; });
+  document.getElementById('f-install-date').value = '';
+  document.getElementById('f-notes').value = '';
+  ['g0','g1','g2','g3','g4','g5'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+  ['d0','d1','d2','d3','d4','d5'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+  document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('yes','no','selected'));
+  document.querySelectorAll('.other-input').forEach(el => { el.classList.remove('show'); el.value=''; });
+  document.getElementById('status').className = 'status';
+  const bannerEl = document.getElementById('project-ref');
+  bannerEl.textContent = '';
+  bannerEl.classList.remove('show');
+  document.getElementById('project-ref-input').value = '';
+}
+</script>
+</body>
+</html>
