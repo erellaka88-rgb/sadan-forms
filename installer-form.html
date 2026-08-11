@@ -74,7 +74,7 @@ body{font-family:Arial,sans-serif;direction:rtl;background:#f5f5f5;font-size:14p
     <div class="connect-row">
       <div class="connect-field">
         <label>מספר הזמנה (S00xxx) או מספר פרויקט</label>
-        <input type="text" id="project-ref-input" placeholder="S00224" onkeydown="if(event.key==='Enter')loadProject()">
+        <input type="text" id="project-ref-input" dir="ltr" placeholder="S00224" onkeydown="if(event.key==='Enter')loadProject()">
       </div>
       <button class="btn-connect" onclick="loadProject()">טעינה</button>
     </div>
@@ -139,7 +139,6 @@ body{font-family:Arial,sans-serif;direction:rtl;background:#f5f5f5;font-size:14p
 </div>
 
 <script>
-// כתובת ה-Cloudflare Worker (הפרוקסי המאובטח) — לעדכן אחרי שלב ההקמה ב-Cloudflare
 const WORKER_URL = 'https://sadan-installer-proxy.erellaka88.workers.dev';
 
 document.getElementById('form-date').textContent = new Date().toLocaleDateString('he-IL');
@@ -163,7 +162,7 @@ function fillField(id, val) {
 }
 
 async function loadProject() {
-  const ref = document.getElementById('project-ref-input').value.trim();
+  const ref = document.getElementById('project-ref-input').value.trim().replace(/[^\x20-\x7E]/g, '');
   if (!ref) { setStatus('הכנס מספר הזמנה (S00xxx) או מספר פרויקט', 'error'); return; }
 
   setStatus('מתחבר לאודו...', 'loading');
