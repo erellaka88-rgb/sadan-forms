@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>איפיון מעלון אנכי בפיר — סדן מעליות</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{overflow-x:hidden;max-width:100%}
+body{font-family:Arial,sans-serif;direction:rtl;background:#f5f5f5;font-size:16px;color:#222}
+.page{max-width:900px;margin:0 auto;padding:1rem}
+.header{background:#fff;border:1px solid #ddd;border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}
+.logo{font-size:19px;font-weight:700;color:#333}
+.project-banner{background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:0.85rem 1.25rem;margin-bottom:1rem;font-size:18px;font-weight:700;color:#1565c0;text-align:center;display:none}
+.project-banner.show{display:block}
+.connect-box{background:#fff;border:1px solid #ddd;border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem}
+.connect-box h3{font-size:16px;font-weight:700;margin-bottom:0.75rem;color:#444}
+.connect-row{display:flex;gap:10px;align-items:flex-end}
+.connect-field{display:flex;flex-direction:column;gap:4px;flex:1}
+.connect-field label{font-size:13px;color:#666}
+.connect-field input{border:1px solid #ccc;border-radius:4px;padding:8px 10px;font-size:15px;width:100%}
+.connect-field input:focus{outline:none;border-color:#4a90e2}
+.btn-connect{background:#4a90e2;color:#fff;border:none;padding:10px 20px;border-radius:4px;font-size:15px;cursor:pointer;font-weight:600;white-space:nowrap;height:40px}
+.btn-connect:hover{background:#357abd}
+.status{font-size:13px;margin-top:8px;padding:7px 10px;border-radius:4px;display:none}
+.status.success{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;display:block}
+.status.error{background:#ffebee;color:#c62828;border:1px solid #ef9a9a;display:block}
+.status.loading{background:#e3f2fd;color:#1565c0;border:1px solid #90caf9;display:block}
+.section{background:#fff;border:1px solid #ddd;border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem}
+.section-title{font-size:15px;font-weight:700;color:#333;margin-bottom:0.75rem;padding-bottom:0.5rem;border-bottom:2px solid #4a90e2}
+.subsection-title{font-size:13px;color:#888;margin:10px 0 6px;font-weight:700}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:0.5rem}
+.fields.triple{grid-template-columns:1fr 1fr 1fr}
+.fields.quad{grid-template-columns:1fr 1fr 1fr 1fr}
+.field{display:flex;flex-direction:column;gap:3px}
+.field label{font-size:12px;color:#888}
+.field .val{font-size:16px;font-weight:600;color:#222;padding:6px 0;border-bottom:1px solid #eee;min-height:30px}
+.field .val.empty{color:#bbb;font-weight:400;font-style:italic}
+.field .val.editable{background:#f9f9f9;border:1px solid #ddd;border-radius:4px;padding:6px 8px;cursor:text}
+.field textarea.val.editable{min-height:55px;font-family:inherit;resize:vertical;width:100%}
+
+/* טבלת צדדים / תחנות */
+.grid-table{width:100%;border-collapse:collapse;margin-top:6px;font-size:13px}
+.grid-table th,.grid-table td{border:1px solid #ddd;padding:6px 5px;text-align:center}
+.grid-table th{background:#f5f7fa;font-weight:700;font-size:12px;color:#555}
+.grid-table td.row-label{text-align:right;font-size:12px;color:#555;background:#fafafa;min-width:140px}
+.grid-table input{width:100%;border:none;text-align:center;font-size:13px;background:transparent}
+.grid-table input:focus{outline:1px solid #4a90e2;background:#fff}
+
+/* קבוצת בחירה (טוגל) */
+.toggle{display:flex;gap:6px;flex-wrap:wrap}
+.toggle-btn{padding:5px 14px;border-radius:20px;border:1px solid #ddd;background:#f5f5f5;color:#666;font-size:13px;cursor:pointer}
+.toggle-btn.yes{background:#e8f5e9;border-color:#a5d6a7;color:#2e7d32;font-weight:600}
+.toggle-btn.no{background:#ffebee;border-color:#ef9a9a;color:#c62828;font-weight:600}
+.toggle-btn.selected{background:#e3f2fd;border-color:#90caf9;color:#1565c0;font-weight:600}
+.check-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0;gap:10px;flex-wrap:wrap}
+.check-item:last-child{border-bottom:none}
+.check-item label{font-size:14px}
+
+.note-box{background:#fffde7;border:1px solid #fff9c4;border-radius:4px;padding:8px 12px;margin-top:0.75rem;font-size:12px;color:#7a6a00}
+
+.sign-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:6px}
+.sign-field{display:flex;flex-direction:column;gap:4px}
+.sign-field label{font-size:12px;color:#888}
+.sign-field input{border:none;border-bottom:1px solid #999;padding:6px 2px;font-size:15px;background:transparent}
+.sign-field input:focus{outline:none;border-color:#4a90e2}
+
+.divider{border:none;border-top:1px solid #eee;margin:0.85rem 0}
+.actions{display:flex;gap:10px;margin-top:1rem;padding-top:1rem;border-top:1px solid #ddd}
+.btn-print{flex:1;padding:12px;background:#333;color:#fff;border:none;border-radius:4px;font-size:16px;cursor:pointer;font-weight:600}
+.btn-print:hover{background:#111}
+.btn-reset{padding:12px 18px;background:#fff;color:#666;border:1px solid #ddd;border-radius:4px;font-size:16px;cursor:pointer}
+
+@media print{
+  .connect-box,.actions{display:none!important}
+  .page{padding:0}
+  .section{border:1px solid #ccc;break-inside:avoid}
+}
+@media (max-width:600px){
+  .fields,.fields.triple,.fields.quad,.sign-grid{grid-template-columns:1fr}
+  .grid-table{font-size:11px}
+  .grid-table td.row-label{min-width:90px;font-size:10px}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="logo">סדן מעליות — איפיון מעלון אנכי בפיר (INDOMO)</div>
+    <div style="text-align:left;font-size:13px;color:#666" id="form-date"></div>
+  </div>
+
+  <div class="project-banner" id="project-ref"></div>
+
+  <div class="connect-box">
+    <h3>טעינת פרויקט מאודו</h3>
+    <div class="connect-row">
+      <div class="connect-field">
+        <label>מספר הזמנה — אפשר להקליד רק מספר (למשל 224) או המלא (S00224)</label>
+        <input type="text" id="project-ref-input" dir="ltr" placeholder="S00224" onkeydown="if(event.key==='Enter')loadProject()">
+      </div>
+      <button class="btn-connect" onclick="loadProject()">טעינה</button>
+    </div>
+    <div class="status" id="status"></div>
+  </div>
+
+  <!-- פרטי פרויקט -->
+  <div class="section">
+    <div class="section-title">פרטי הפרויקט</div>
+    <div class="fields">
+      <div class="field"><label>שם ומספר הפרויקט</label><div class="val" id="f-name">—</div></div>
+      <div class="field"><label>לקוח</label><div class="val" id="f-customer">—</div></div>
+      <div class="field"><label>מנהל פרויקט</label><div class="val" id="f-pm">—</div></div>
+      <div class="field"><label>כתובת ההתקנה</label><div class="val" id="f-address">—</div></div>
+      <div class="field"><label>מס' עבודה / פרטי / ציבורי</label><div class="val editable" contenteditable="true" id="f-job-type"></div></div>
+      <div class="field"><label>דגם תא</label><div class="val editable" contenteditable="true" id="f-cab-model"></div></div>
+    </div>
+  </div>
+
+  <!-- תיאור התא -->
+  <div class="section">
+    <div class="section-title">תיאור התא</div>
+    <div class="fields triple">
+      <div class="field"><label>SETUP גוון</label><div class="val editable" contenteditable="true" id="f-setup-color"></div></div>
+      <div class="field"><label>תקרת תא</label><div class="val editable" contenteditable="true" id="f-ceiling"></div></div>
+      <div class="field"><label>רצפת תא</label><div class="val editable" contenteditable="true" id="f-floor"></div></div>
+    </div>
+    <div class="subsection-title" style="margin-top:14px">מראה כללי — גימור התא</div>
+    <table class="grid-table" id="tbl-cabin-general">
+      <thead><tr><th></th><th>צד A</th><th>צד B</th><th>צד C</th><th>צד D</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="subsection-title" style="margin-top:18px;border-top:2px solid #eee;padding-top:14px">דלת תא</div>
+    <table class="grid-table" id="tbl-cabin-door">
+      <thead><tr><th></th><th>צד A</th><th>צד B</th><th>צד C</th><th>צד D</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="note-box">
+      SETUP כולל: מסגרת התקרה, פנל לוח הלחצנים, משקופי הדלתות, תוספות ללוח הלחצנים בתוך התא.<br>
+      דוגמאות לתוספות ללוח לחצנים: מאוורר, תצוגה LCD 120/60mm, מפסק מפתח (לציין סוג), כריזה קולית.
+    </div>
+  </div>
+
+  <!-- תחנות הפיר -->
+  <div class="section">
+    <div class="section-title">תחנות הפיר</div>
+    <table class="grid-table" id="tbl-stations">
+      <thead><tr><th></th><th>תחנה תחתונה</th><th>תחנת ביניים</th><th>תחנת ביניים</th><th>תחנה עליונה</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="note-box">
+      מפסק מפתח 2E2P — המפתח נשלף בשני המצבים.<br>
+      דוגמאות לתוספות: מפסק מפתח (לציין סוג), לחצנים שלא על המשקוף (לציין היכן), תצוגה 50/50mm, אחר...
+    </div>
+  </div>
+
+  <!-- מדידת הפיר -->
+  <div class="section">
+    <div class="section-title">מדידת הפיר</div>
+    <div class="check-item">
+      <label>האם בוצעה מדידה של הפיר</label>
+      <div class="toggle" id="grp-measured">
+        <button class="toggle-btn" onclick="tog2(this,'yes')">כן</button>
+        <button class="toggle-btn" onclick="tog2(this,'no')">לא</button>
+      </div>
+    </div>
+    <div class="subsection-title">מידות תא בהזמנה</div>
+    <div class="fields triple">
+      <div class="field"><label>רוחב</label><div class="val editable" contenteditable="true" id="f-order-width"></div></div>
+      <div class="field"><label>אורך</label><div class="val editable" contenteditable="true" id="f-order-depth"></div></div>
+    </div>
+    <div class="subsection-title">מידות תא בפועל</div>
+    <div class="fields triple">
+      <div class="field"><label>רוחב</label><div class="val editable" contenteditable="true" id="f-actual-width"></div></div>
+      <div class="field"><label>אורך</label><div class="val editable" contenteditable="true" id="f-actual-depth"></div></div>
+    </div>
+  </div>
+
+  <!-- תאור הפיר וסביבתו -->
+  <div class="section">
+    <div class="section-title">תאור הפיר וסביבתו</div>
+    <div class="check-item">
+      <label>פיר</label>
+      <div class="toggle" id="grp-shaft-loc">
+        <button class="toggle-btn" onclick="selectOpt(this)">פנימי</button>
+        <button class="toggle-btn" onclick="selectOpt(this)">חיצוני</button>
+      </div>
+    </div>
+    <div class="check-item">
+      <label>סוג הפיר</label>
+      <div class="toggle" id="grp-shaft-type">
+        <button class="toggle-btn" onclick="selectOpt(this)">בטון</button>
+        <button class="toggle-btn" onclick="selectOpt(this)">מתכת</button>
+        <button class="toggle-btn" onclick="selectOpt(this)">מודולרי</button>
+      </div>
+    </div>
+    <div class="fields">
+      <div class="field"><label>מבצע הפיר</label><div class="val editable" contenteditable="true" id="f-shaft-builder"></div></div>
+      <div class="field"><label>גוון הפיר (לפרט לפי הצורך)</label><div class="val editable" contenteditable="true" id="f-shaft-color"></div></div>
+      <div class="field"><label>חיפוי הפיר (לפרט לפי הצורך)</label><div class="val editable" contenteditable="true" id="f-shaft-cover"></div></div>
+      <div class="field"><label>מיזוג לפיר</label><div class="val editable" contenteditable="true" id="f-shaft-ac"></div></div>
+      <div class="field"><label>התחברות הפיר למבנה</label><div class="val editable" contenteditable="true" id="f-shaft-connection"></div></div>
+    </div>
+    <div class="subsection-title">מיקום ארון מכונה מעל 3 מ' — תוספת עלות*</div>
+    <div class="fields quad">
+      <div class="field"><label>קומה / צד</label><div class="val editable" contenteditable="true" id="f-cabinet-floor-side"></div></div>
+      <div class="field"><label>מרחק אופקי</label><div class="val editable" contenteditable="true" id="f-cabinet-horiz"></div></div>
+      <div class="field"><label>מרחק אנכי</label><div class="val editable" contenteditable="true" id="f-cabinet-vert"></div></div>
+      <div class="field">
+        <label>מיקום</label>
+        <div class="toggle" id="grp-cabinet-loc">
+          <button class="toggle-btn" onclick="selectOpt(this)">פנימי</button>
+          <button class="toggle-btn" onclick="selectOpt(this)">חיצוני</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- כללי -->
+  <div class="section">
+    <div class="section-title">כללי</div>
+    <div class="check-item">
+      <label>פיקוד שבת</label>
+      <div class="toggle" id="grp-shabbat">
+        <button class="toggle-btn" onclick="selectOpt(this)">כן</button>
+        <button class="toggle-btn" onclick="selectOpt(this)">לא</button>
+        <button class="toggle-btn" onclick="selectOpt(this)">כלול בהסכם</button>
+      </div>
+    </div>
+    <div class="check-item">
+      <label>ניקוז / רגש לחות (בתוספת 1,500 ₪ + מע"מ)</label>
+      <div class="toggle" id="grp-drain">
+        <button class="toggle-btn" onclick="tog2(this,'yes')">כן</button>
+        <button class="toggle-btn" onclick="tog2(this,'no')">לא</button>
+      </div>
+    </div>
+    <div class="check-item">
+      <label>נמסרו הנחיות לעבודות לאחריות הלקוח?</label>
+      <div class="toggle" id="grp-instructions">
+        <button class="toggle-btn" onclick="tog2(this,'yes')">כן</button>
+        <button class="toggle-btn" onclick="tog2(this,'no')">לא</button>
+      </div>
+    </div>
+    <div class="check-item">
+      <label>מכשיר טלפון / חייגן (בתוספת 1,700 ₪ + מע"מ)</label>
+      <div class="toggle" id="grp-phone">
+        <button class="toggle-btn" onclick="tog2(this,'yes')">כן</button>
+        <button class="toggle-btn" onclick="tog2(this,'no')">לא</button>
+      </div>
+    </div>
+    <div class="fields">
+      <div class="field"><label>גוון</label><div class="val editable" contenteditable="true" id="f-phone-color"></div></div>
+      <div class="field"><label>כריזה</label><div class="val editable" contenteditable="true" id="f-phone-announce"></div></div>
+    </div>
+    <div class="field"><label>דרישות יועץ נגישות</label><div class="val editable" contenteditable="true" id="f-accessibility"></div></div>
+    <div class="field" style="margin-top:10px"><label>הערות</label><textarea class="val editable" id="f-general-notes" rows="3"></textarea></div>
+  </div>
+
+  <!-- חתימות -->
+  <div class="section">
+    <div class="section-title">אישור וחתימה</div>
+    <div class="sign-grid">
+      <div class="sign-field"><label>נציג הלקוח (שם ותפקיד)</label><input type="text" id="sign-client-name"></div>
+      <div class="sign-field"><label>חתימת הלקוח</label><input type="text" id="sign-client-signature"></div>
+      <div class="sign-field"><label>נציג סדן</label><input type="text" id="sign-sadan"></div>
+      <div class="sign-field"><label>תאריך</label><input type="date" id="sign-date"></div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn-print" onclick="window.print()">🖨️ הדפס / שמור PDF</button>
+    <button class="btn-reset" onclick="resetForm()">נקה</button>
+  </div>
+
+</div>
+
+<script>
+const WORKER_URL = 'https://sadan-installer-proxy.erellaka88.workers.dev';
+
+document.getElementById('form-date').textContent = new Date().toLocaleDateString('he-IL');
+
+// ==== טבלת תיאור התא (צדדים A-D) — שני נושאים נפרדים ====
+const CABIN_GENERAL_ROWS = [
+  'גמר קירות',
+  'מראה',
+  'מאחז יד',
+  'לוח לחצנים (צד בוכנה)',
+  'תוספות ללוח לחצנים',
+];
+const CABIN_DOOR_ROWS = [
+  'דלת תא',
+  'יציאה לתחנה',
+  'סוג (טלס\' / מרכ\' / בוס / ללא)',
+  'מידות פתח הדלת (מ"מ)',
+  'כיוון פתיחה (במבט מבחוץ)',
+  'גוון',
+  'גוון זכוכית (או אטום)',
+  'הערות אחרות',
+];
+const SIDES = ['A','B','C','D'];
+
+function fillSideTable(tableId, rows) {
+  rows.forEach(label => {
+    const tr = document.createElement('tr');
+    let cells = `<td class="row-label">${label}</td>`;
+    SIDES.forEach(s => { cells += `<td><input type="text" data-side="${s}"></td>`; });
+    tr.innerHTML = cells;
+    document.getElementById(tableId).querySelector('tbody').appendChild(tr);
+  });
+}
+
+fillSideTable('tbl-cabin-general', CABIN_GENERAL_ROWS);
+fillSideTable('tbl-cabin-door', CABIN_DOOR_ROWS);
+
+// ==== טבלת תחנות הפיר ====
+const STATION_ROWS = [
+  'מספור תחנות',
+  'סוג (טלס\' / מרכ\' / בוס / כנף)',
+  'בדלת כנף בלבד — סוג ידית',
+  'כיוון פתיחה (במבט מבחוץ)',
+  'גוון',
+  'גוון זכוכית (או אטום)',
+  'מפסק מפתח (לציין סוג)',
+  'נורית "מעלון כאן"',
+];
+
+STATION_ROWS.forEach(label => {
+  const tr = document.createElement('tr');
+  let cells = `<td class="row-label">${label}</td>`;
+  for (let i = 0; i < 4; i++) { cells += `<td><input type="text"></td>`; }
+  tr.innerHTML = cells;
+  document.getElementById('tbl-stations').querySelector('tbody').appendChild(tr);
+});
+
+// ==== בחירה יחידה מתוך קבוצה (סוג פיר, כיוון וכו') ====
+function selectOpt(btn) {
+  const group = btn.parentElement;
+  group.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+// ==== כן/לא ====
+function tog2(btn, val) {
+  btn.parentElement.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('yes','no'));
+  btn.classList.add(val);
+}
+
+// ==== חיבור לאודו ====
+function setStatus(msg, type) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status ' + type;
+}
+
+function fillField(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (val && val !== false && String(val).trim()) {
+    el.textContent = Array.isArray(val) ? val[1] : val;
+    el.classList.remove('empty');
+  } else {
+    el.textContent = '—';
+    el.classList.add('empty');
+  }
+}
+
+async function loadProject() {
+  let ref = document.getElementById('project-ref-input').value.trim().replace(/[^\x20-\x7E]/g, '');
+  if (/^\d+$/.test(ref)) {
+    ref = 'S' + ref.padStart(5, '0');
+  }
+  document.getElementById('project-ref-input').value = ref;
+  if (!ref) { setStatus('הכנס מספר הזמנה (S00xxx) או מספר פרויקט', 'error'); return; }
+
+  setStatus('מתחבר לאודו...', 'loading');
+
+  try {
+    const resp = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ref })
+    });
+
+    const data = await resp.json();
+
+    if (data.error) {
+      setStatus('שגיאה: ' + (data.error.data?.message || data.error.message || JSON.stringify(data.error)), 'error');
+      return;
+    }
+
+    const records = data.result;
+    if (!records || records.length === 0) {
+      setStatus('לא נמצא פרויקט', 'error');
+      return;
+    }
+
+    const p = records[0];
+    fillField('f-name', p.name);
+    fillField('f-customer', p.partner_id);
+    fillField('f-pm', p.user_id);
+    fillField('f-address', p.x_studio_delivery_address);
+
+    const todayStr = new Date().toLocaleDateString('he-IL');
+    const bannerEl = document.getElementById('project-ref');
+    bannerEl.textContent = p.name + '  —  ' + todayStr;
+    bannerEl.classList.add('show');
+    setStatus('✓ נטען בהצלחה: ' + p.name, 'success');
+
+  } catch(e) {
+    setStatus('שגיאת תקשורת עם השרת: ' + e.message, 'error');
+  }
+}
+
+function resetForm() {
+  ['f-name','f-customer','f-pm','f-address'].forEach(id => {
+    const el = document.getElementById(id); if(el){ el.textContent='—'; el.classList.add('empty'); }
+  });
+  document.querySelectorAll('.field .val.editable[contenteditable]').forEach(el => el.textContent = '');
+  document.querySelectorAll('textarea.val.editable').forEach(el => el.value = '');
+  document.querySelectorAll('.grid-table input[type=text]').forEach(inp => inp.value = '');
+  document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('yes','no','selected'));
+  ['sign-client-name','sign-client-signature','sign-sadan','sign-date'].forEach(id => { document.getElementById(id).value = ''; });
+  const bannerEl = document.getElementById('project-ref');
+  bannerEl.textContent = '';
+  bannerEl.classList.remove('show');
+  document.getElementById('status').className = 'status';
+  document.getElementById('project-ref-input').value = '';
+}
+</script>
+</body>
+</html>
