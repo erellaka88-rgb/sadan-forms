@@ -59,12 +59,15 @@ body{font-family:Arial,sans-serif;direction:rtl;background:#f5f5f5;font-size:16p
 .doors-cell select{width:100%;text-align:center;font-size:14px;border:1px solid #ddd;border-radius:4px;padding:6px 2px;background:#f9f9f9}
 .divider{border:none;border-top:1px solid #eee;margin:0.85rem 0}
 .actions{display:flex;gap:10px;margin-top:1rem;padding-top:1rem;border-top:1px solid #ddd}
+.notes-image{max-width:100%;border:1px solid #ddd;border-radius:6px;display:block;margin-top:8px}
+.notes-image-wrap{position:relative;display:inline-block}
+.notes-image-remove{position:absolute;top:4px;left:4px;background:#c62828;color:#fff;border:none;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:14px;line-height:1}
 .btn-print{flex:1;padding:12px;background:#333;color:#fff;border:none;border-radius:4px;font-size:16px;cursor:pointer;font-weight:600}
 .btn-print:hover{background:#111}
 .btn-reset{padding:12px 18px;background:#fff;color:#666;border:1px solid #ddd;border-radius:4px;font-size:16px;cursor:pointer}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media print{
-  .connect-box,.actions{display:none!important}
+  .connect-box,.actions,.no-print,.notes-image-remove{display:none!important}
   .page{padding:0}
   .section{border:1px solid #ccc;break-inside:avoid}
 }
@@ -226,7 +229,15 @@ body{font-family:Arial,sans-serif;direction:rtl;background:#f5f5f5;font-size:16p
     </div>
     <div class="check-item" style="margin-top:6px">
       <label>האם נדרש להתקין פיקוד שבת?</label>
-      <div class="toggle"><button class="toggle-btn" onclick="tog(this,'yes')">כן</button><button class="toggle-btn" onclick="tog(this,'no')">לא</button></div>
+      <div class="toggle"><button class="toggle-btn" onclick="togShabbat(this,'yes')">כן</button><button class="toggle-btn" onclick="togShabbat(this,'no')">לא</button></div>
+    </div>
+    <div id="shabbat-options" style="display:none;margin-top:6px">
+      <div class="toggle" id="grp-shabbat-type">
+        <button class="toggle-btn" onclick="selectOpt(this)">צומת</button>
+        <button class="toggle-btn" onclick="selectOpt(this)">הלכה</button>
+        <button class="toggle-btn" onclick="selectOpt(this,true)">אחר</button>
+      </div>
+      <input type="text" class="other-input" id="f-shabbat-other" placeholder="אחר — פירוט חופשי...">
     </div>
     <div class="subtitle">7. פרופילים להתקנת משקופים</div>
     <div class="two-col">
@@ -237,21 +248,27 @@ body{font-family:Arial,sans-serif;direction:rtl;background:#f5f5f5;font-size:16p
 
   <!-- גובה ריצוף -->
   <div class="section">
-    <div class="section-title">גובה ריצוף בתחנות (ס"מ)</div>
+    <div class="section-title">גובה ריצוף בתחנות (מ"מ)</div>
     <div class="floor-grid">
-      <div class="floor-cell"><label>תחנה 0</label><input type="number" id="g0"></div>
-      <div class="floor-cell"><label>תחנה 1</label><input type="number" id="g1"></div>
-      <div class="floor-cell"><label>תחנה 2</label><input type="number" id="g2"></div>
-      <div class="floor-cell"><label>תחנה 3</label><input type="number" id="g3"></div>
-      <div class="floor-cell"><label>תחנה 4</label><input type="number" id="g4"></div>
-      <div class="floor-cell"><label>תחנה 5</label><input type="number" id="g5"></div>
+      <div class="floor-cell"><label>תחנה 0</label><input type="text" inputmode="numeric" id="g0"></div>
+      <div class="floor-cell"><label>תחנה 1</label><input type="text" inputmode="numeric" id="g1"></div>
+      <div class="floor-cell"><label>תחנה 2</label><input type="text" inputmode="numeric" id="g2"></div>
+      <div class="floor-cell"><label>תחנה 3</label><input type="text" inputmode="numeric" id="g3"></div>
+      <div class="floor-cell"><label>תחנה 4</label><input type="text" inputmode="numeric" id="g4"></div>
+      <div class="floor-cell"><label>תחנה 5</label><input type="text" inputmode="numeric" id="g5"></div>
     </div>
   </div>
 
   <!-- הערות -->
   <div class="section">
     <div class="section-title">הערות / תוספות מיוחדות</div>
-    <textarea class="val editable" id="f-notes" rows="4" style="width:100%"></textarea>
+    <textarea class="val editable" id="f-notes" rows="4" style="width:100%" placeholder="ניתן להדביק כאן תמונה עם Ctrl+V (למשל מקובץ ההערות שמופק אחרי ההזמנה)"></textarea>
+    <div class="no-print" style="margin-top:10px">
+      <button type="button" class="btn-reset" onclick="document.getElementById('notes-image-input').click()" style="font-size:13px;padding:8px 14px">📎 צרף תמונה</button>
+      <span style="font-size:12px;color:#888;margin-right:8px">או הדביקו תמונה (Ctrl+V) בתוך תיבת ההערות למעלה</span>
+      <input type="file" id="notes-image-input" accept="image/*" style="display:none" onchange="handleImageFile(this.files[0])">
+    </div>
+    <div id="notes-image-preview" style="margin-top:10px"></div>
   </div>
 
   <div class="actions">
@@ -265,6 +282,36 @@ body{font-family:Arial,sans-serif;direction:rtl;background:#f5f5f5;font-size:16p
 const WORKER_URL = 'https://sadan-installer-proxy.erellaka88.workers.dev';
 
 document.getElementById('form-date').textContent = new Date().toLocaleDateString('he-IL');
+
+// ==== הדבקת/צירוף תמונה בהערות ====
+function handleImageFile(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = (e) => showNotesImage(e.target.result);
+  reader.readAsDataURL(file);
+}
+
+function showNotesImage(dataUrl) {
+  const preview = document.getElementById('notes-image-preview');
+  preview.innerHTML = `
+    <div class="notes-image-wrap">
+      <img class="notes-image" src="${dataUrl}" alt="תמונה מצורפת">
+      <button type="button" class="notes-image-remove" onclick="document.getElementById('notes-image-preview').innerHTML=''">✕</button>
+    </div>`;
+}
+
+// הדבקת תמונה מהלוח (Ctrl+V) כשהפוקוס בתיבת ההערות
+document.getElementById('f-notes').addEventListener('paste', (e) => {
+  const items = e.clipboardData?.items || [];
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      const file = item.getAsFile();
+      handleImageFile(file);
+      e.preventDefault();
+      break;
+    }
+  }
+});
 
 function setStatus(msg, type) {
   const el = document.getElementById('status');
@@ -341,6 +388,20 @@ function tog(btn, val) {
   btn.classList.add(val);
 }
 
+// פיקוד שבת: כן/לא רגיל, ובנוסף מציג/מסתיר את תת-האפשרויות (צומת/הלכה/אחר)
+function togShabbat(btn, val) {
+  tog(btn, val);
+  const optionsDiv = document.getElementById('shabbat-options');
+  if (val === 'yes') {
+    optionsDiv.style.display = 'block';
+  } else {
+    optionsDiv.style.display = 'none';
+    optionsDiv.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('f-shabbat-other').value = '';
+    document.getElementById('f-shabbat-other').classList.remove('show');
+  }
+}
+
 // בחירה יחידה מתוך קבוצת אפשרויות (סוג פיר, דלתות, חניה וכו')
 function selectOpt(btn, isOther) {
   const group = btn.parentElement;
@@ -367,6 +428,9 @@ function resetForm() {
     .forEach(id => { const el = document.getElementById(id); if(el) el.textContent=''; });
   document.getElementById('f-install-date').value = '';
   document.getElementById('f-notes').value = '';
+  document.getElementById('notes-image-preview').innerHTML = '';
+  document.getElementById('notes-image-input').value = '';
+  document.getElementById('shabbat-options').style.display = 'none';
   ['g0','g1','g2','g3','g4','g5'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
   ['d0','d1','d2','d3','d4','d5'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
   document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('yes','no','selected'));
