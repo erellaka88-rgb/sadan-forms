@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>טופס מתקינים — סדן מעליות</title>
+<title>טופס מידע למתקין — סדן מעליות</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{overflow-x:hidden;max-width:100%}
@@ -57,6 +57,9 @@ body{font-family:Arial,sans-serif;direction:rtl;background:#f5f5f5;font-size:16p
 .doors-cell{display:flex;flex-direction:column;align-items:center;gap:3px}
 .doors-cell label{font-size:12px;color:#888}
 .doors-cell select{width:100%;text-align:center;font-size:14px;border:1px solid #ddd;border-radius:4px;padding:6px 2px;background:#f9f9f9}
+.door-dir-checks{display:flex;flex-direction:column;gap:2px;width:100%}
+.door-dir-checks label{display:flex;align-items:center;justify-content:center;gap:4px;font-size:12px;color:#555;background:#f9f9f9;border:1px solid #eee;border-radius:4px;padding:3px 4px;cursor:pointer}
+.door-dir-checks input[type=checkbox]{width:14px;height:14px;accent-color:#4a90e2;margin:0}
 .divider{border:none;border-top:1px solid #eee;margin:0.85rem 0}
 .actions{display:flex;gap:10px;margin-top:1rem;padding-top:1rem;border-top:1px solid #ddd}
 .notes-image{max-width:100%;border:1px solid #ddd;border-radius:6px;display:block;margin-top:8px}
@@ -185,31 +188,45 @@ body{font-family:Arial,sans-serif;direction:rtl;background:#f5f5f5;font-size:16p
   <!-- דלתות -->
   <div class="section">
     <div class="section-title">דלתות</div>
-    <div class="subtitle">דלת כנף</div>
-    <div class="toggle" id="grp-door-panel">
-      <button class="toggle-btn" onclick="selectOpt(this)">זכוכית שקופה</button>
-      <button class="toggle-btn" onclick="selectOpt(this)">חלבית</button>
-      <button class="toggle-btn" onclick="selectOpt(this)">מדבקה לאחר מתי"י</button>
-      <button class="toggle-btn" onclick="selectOpt(this)">מתכת</button>
-      <button class="toggle-btn" onclick="selectOpt(this,true)">אחר</button>
+
+    <div class="subtitle">דלת תחנה</div>
+    <div class="toggle" id="grp-station-door-type">
+      <button class="toggle-btn" onclick="selectStationDoorType(this,'telescopic')">טלסקופית</button>
+      <button class="toggle-btn" onclick="selectStationDoorType(this,'panel')">כנף</button>
     </div>
-    <input type="text" class="other-input" id="f-door-panel-other" placeholder="אחר — פירוט חופשי...">
-    <div class="subtitle">דלת אוטומטית</div>
-    <div class="toggle" id="grp-door-auto">
-      <button class="toggle-btn" onclick="selectOpt(this)">טלסקופית</button>
-      <button class="toggle-btn" onclick="selectOpt(this)">אוטובוס</button>
-      <button class="toggle-btn" onclick="selectOpt(this,true)">אחר</button>
+    <div class="toggle" id="grp-station-door-telescopic" style="display:none;margin-top:6px">
+      <button class="toggle-btn" onclick="selectOpt(this)">אטום</button>
+      <button class="toggle-btn" onclick="selectOpt(this)">שקוף</button>
+      <button class="toggle-btn" onclick="selectOpt(this)">פנורמי</button>
     </div>
-    <input type="text" class="other-input" id="f-door-auto-other" placeholder="אחר — פירוט חופשי...">
-    <div class="subtitle">כיווני דלתות בכל תחנה (A / B / C / D)</div>
+    <div class="toggle" id="grp-station-door-panel" style="display:none;margin-top:6px">
+      <button class="toggle-btn" onclick="selectOpt(this)">פנורמי</button>
+      <button class="toggle-btn" onclick="selectOpt(this)">אטום</button>
+    </div>
+    <textarea class="val editable" id="f-station-door-notes" rows="2" style="width:100%;margin-top:8px" placeholder="הערות לגבי דלת התחנה (למשל אם כל תחנה שונה)..."></textarea>
+
+    <div class="subtitle" style="margin-top:18px;border-top:1px solid #eee;padding-top:14px">דלת תא</div>
+    <div class="toggle" id="grp-cabin-door-type">
+      <button class="toggle-btn" onclick="selectCabinDoorType(this,'none')">ללא דלת</button>
+      <button class="toggle-btn" onclick="selectCabinDoorType(this,'telescopic')">טלסקופית</button>
+      <button class="toggle-btn" onclick="selectCabinDoorType(this,'bus')">דלת אוטובוס</button>
+    </div>
+    <div class="toggle" id="grp-cabin-door-sub" style="display:none;margin-top:6px">
+      <button class="toggle-btn" onclick="selectOpt(this)">אטום</button>
+      <button class="toggle-btn" onclick="selectOpt(this)">פנורמי</button>
+    </div>
+    <textarea class="val editable" id="f-cabin-door-notes" rows="2" style="width:100%;margin-top:8px" placeholder="הערות לגבי דלת התא..."></textarea>
+
+    <div class="subtitle" style="margin-top:18px;border-top:1px solid #eee;padding-top:14px">כיווני דלתות בכל תחנה (ניתן לבחור כמה כיוונים לתחנה)</div>
     <div class="doors-grid">
-      <div class="doors-cell"><label>תחנה 0</label><select id="d0"><option value="">—</option><option>A</option><option>B</option><option>C</option><option>D</option></select></div>
-      <div class="doors-cell"><label>תחנה 1</label><select id="d1"><option value="">—</option><option>A</option><option>B</option><option>C</option><option>D</option></select></div>
-      <div class="doors-cell"><label>תחנה 2</label><select id="d2"><option value="">—</option><option>A</option><option>B</option><option>C</option><option>D</option></select></div>
-      <div class="doors-cell"><label>תחנה 3</label><select id="d3"><option value="">—</option><option>A</option><option>B</option><option>C</option><option>D</option></select></div>
-      <div class="doors-cell"><label>תחנה 4</label><select id="d4"><option value="">—</option><option>A</option><option>B</option><option>C</option><option>D</option></select></div>
-      <div class="doors-cell"><label>תחנה 5</label><select id="d5"><option value="">—</option><option>A</option><option>B</option><option>C</option><option>D</option></select></div>
+      <div class="doors-cell"><label>תחנה 0</label><div class="door-dir-checks" data-station="0"><label><input type="checkbox" value="A">A</label><label><input type="checkbox" value="B">B</label><label><input type="checkbox" value="C">C</label><label><input type="checkbox" value="D">D</label></div></div>
+      <div class="doors-cell"><label>תחנה 1</label><div class="door-dir-checks" data-station="1"><label><input type="checkbox" value="A">A</label><label><input type="checkbox" value="B">B</label><label><input type="checkbox" value="C">C</label><label><input type="checkbox" value="D">D</label></div></div>
+      <div class="doors-cell"><label>תחנה 2</label><div class="door-dir-checks" data-station="2"><label><input type="checkbox" value="A">A</label><label><input type="checkbox" value="B">B</label><label><input type="checkbox" value="C">C</label><label><input type="checkbox" value="D">D</label></div></div>
+      <div class="doors-cell"><label>תחנה 3</label><div class="door-dir-checks" data-station="3"><label><input type="checkbox" value="A">A</label><label><input type="checkbox" value="B">B</label><label><input type="checkbox" value="C">C</label><label><input type="checkbox" value="D">D</label></div></div>
+      <div class="doors-cell"><label>תחנה 4</label><div class="door-dir-checks" data-station="4"><label><input type="checkbox" value="A">A</label><label><input type="checkbox" value="B">B</label><label><input type="checkbox" value="C">C</label><label><input type="checkbox" value="D">D</label></div></div>
+      <div class="doors-cell"><label>תחנה 5</label><div class="door-dir-checks" data-station="5"><label><input type="checkbox" value="A">A</label><label><input type="checkbox" value="B">B</label><label><input type="checkbox" value="C">C</label><label><input type="checkbox" value="D">D</label></div></div>
     </div>
+    <textarea class="val editable" id="f-door-directions-notes" rows="2" style="width:100%;margin-top:8px" placeholder="הערות לגבי כיווני הדלתות..."></textarea>
   </div>
 
   <!-- ציוד וסידורים למתקינים -->
@@ -217,7 +234,13 @@ body{font-family:Arial,sans-serif;direction:rtl;background:#f5f5f5;font-size:16p
     <div class="section-title">על המתקינים לקחת</div>
     <div class="check-list">
       <div class="check-item"><label>1. רגש לחות</label><div class="toggle"><button class="toggle-btn" onclick="tog(this,'yes')">כן</button><button class="toggle-btn" onclick="tog(this,'no')">לא</button></div></div>
-      <div class="check-item"><label>2. טלפון / חייגן</label><div class="toggle"><button class="toggle-btn" onclick="tog(this,'yes')">כן</button><button class="toggle-btn" onclick="tog(this,'no')">לא</button></div></div>
+      <div class="check-item">
+        <label>2. טלפון / חייגן</label>
+        <div class="toggle" id="grp-phone-dialer">
+          <button class="toggle-btn" onclick="selectOpt(this)">טלפון</button>
+          <button class="toggle-btn" onclick="selectOpt(this)">חייגן</button>
+        </div>
+      </div>
       <div class="check-item"><label>3. מערכת כריזה</label><div class="toggle"><button class="toggle-btn" onclick="tog(this,'yes')">כן</button><button class="toggle-btn" onclick="tog(this,'no')">לא</button></div></div>
       <div class="check-item"><label>4. מאצרה</label><div class="toggle"><button class="toggle-btn" onclick="tog(this,'yes')">כן</button><button class="toggle-btn" onclick="tog(this,'no')">לא</button></div></div>
       <div class="check-item"><label>5. גישטל</label><div class="toggle"><button class="toggle-btn" onclick="tog(this,'yes')">כן</button><button class="toggle-btn" onclick="tog(this,'no')">לא</button></div></div>
@@ -269,6 +292,10 @@ body{font-family:Arial,sans-serif;direction:rtl;background:#f5f5f5;font-size:16p
       <input type="file" id="notes-image-input" accept="image/*" style="display:none" onchange="handleImageFile(this.files[0])">
     </div>
     <div id="notes-image-preview" style="margin-top:10px"></div>
+    <div class="field" style="margin-top:12px">
+      <label>קישור לוידאו (YouTube / Drive / WhatsApp וכו')</label>
+      <div class="val editable" contenteditable="true" id="f-video-link" dir="ltr" style="text-align:left"></div>
+    </div>
   </div>
 
   <div class="actions">
@@ -421,6 +448,34 @@ function selectOpt(btn, isOther) {
   }
 }
 
+// דלת תחנה: בחירת טלסקופית/כנף פותחת את קבוצת המשנה המתאימה
+function selectStationDoorType(btn, type) {
+  selectOpt(btn);
+  const telescopicGrp = document.getElementById('grp-station-door-telescopic');
+  const panelGrp = document.getElementById('grp-station-door-panel');
+  if (type === 'telescopic') {
+    telescopicGrp.style.display = 'flex';
+    panelGrp.style.display = 'none';
+    panelGrp.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('selected'));
+  } else {
+    panelGrp.style.display = 'flex';
+    telescopicGrp.style.display = 'none';
+    telescopicGrp.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('selected'));
+  }
+}
+
+// דלת תא: בחירת טלסקופית/אוטובוס פותחת אטום/פנורמי; "ללא דלת" מסתיר
+function selectCabinDoorType(btn, type) {
+  selectOpt(btn);
+  const subGrp = document.getElementById('grp-cabin-door-sub');
+  if (type === 'none') {
+    subGrp.style.display = 'none';
+    subGrp.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('selected'));
+  } else {
+    subGrp.style.display = 'flex';
+  }
+}
+
 function resetForm() {
   ['f-name','f-customer','f-pm','f-address','f-type','f-location','f-stations','f-travel','f-load']
     .forEach(id => { const el = document.getElementById(id); if(el){ el.textContent='—'; el.classList.add('empty'); } });
@@ -430,9 +485,14 @@ function resetForm() {
   document.getElementById('f-notes').value = '';
   document.getElementById('notes-image-preview').innerHTML = '';
   document.getElementById('notes-image-input').value = '';
+  document.getElementById('f-video-link').textContent = '';
   document.getElementById('shabbat-options').style.display = 'none';
+  document.getElementById('grp-station-door-telescopic').style.display = 'none';
+  document.getElementById('grp-station-door-panel').style.display = 'none';
+  document.getElementById('grp-cabin-door-sub').style.display = 'none';
+  ['f-station-door-notes','f-cabin-door-notes','f-door-directions-notes'].forEach(id => { document.getElementById(id).value = ''; });
+  document.querySelectorAll('.door-dir-checks input[type=checkbox]').forEach(cb => cb.checked = false);
   ['g0','g1','g2','g3','g4','g5'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
-  ['d0','d1','d2','d3','d4','d5'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
   document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('yes','no','selected'));
   document.querySelectorAll('.other-input').forEach(el => { el.classList.remove('show'); el.value=''; });
   document.getElementById('status').className = 'status';
