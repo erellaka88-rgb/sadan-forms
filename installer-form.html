@@ -293,8 +293,11 @@ body{font-family:Arial,sans-serif;direction:rtl;background:#f5f5f5;font-size:16p
     </div>
     <div id="notes-image-preview" style="margin-top:10px"></div>
     <div class="field" style="margin-top:12px">
-      <label>קישור לוידאו (YouTube / Drive / WhatsApp וכו')</label>
-      <div class="val editable" contenteditable="true" id="f-video-link" dir="ltr" style="text-align:left"></div>
+      <label>קישור לוידאו (YouTube / Google Drive וכו')</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="val editable" contenteditable="true" id="f-video-link" dir="ltr" style="text-align:left;flex:1"></div>
+        <button type="button" class="no-print btn-reset" onclick="openVideoLink()" style="font-size:13px;padding:6px 12px;white-space:nowrap">🔗 פתח</button>
+      </div>
     </div>
   </div>
 
@@ -311,6 +314,13 @@ const WORKER_URL = 'https://sadan-installer-proxy.erellaka88.workers.dev';
 document.getElementById('form-date').textContent = new Date().toLocaleDateString('he-IL');
 
 // ==== הדבקת/צירוף תמונה בהערות ====
+function openVideoLink() {
+  let url = document.getElementById('f-video-link').textContent.trim();
+  if (!url) { alert('לא הוזן קישור'); return; }
+  if (!/^https?:\/\//i.test(url)) { url = 'https://' + url; }
+  window.open(url, '_blank');
+}
+
 function handleImageFile(file) {
   if (!file || !file.type.startsWith('image/')) return;
   const reader = new FileReader();
