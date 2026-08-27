@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>דוח פינישים סדן — סדן מעליות</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{overflow-x:hidden;max-width:100%}
+body{font-family:Arial,sans-serif;direction:rtl;background:#f5f5f5;font-size:16px;color:#222}
+.page{max-width:950px;margin:0 auto;padding:1rem}
+.header{background:#fff;border:1px solid #ddd;border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}
+.logo{font-size:20px;font-weight:700;color:#333}
+.project-banner{background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:0.85rem 1.25rem;margin-bottom:1rem;font-size:18px;font-weight:700;color:#1565c0;text-align:center;display:none}
+.project-banner.show{display:block}
+.connect-box{background:#fff;border:1px solid #ddd;border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem}
+.connect-box h3{font-size:16px;font-weight:700;margin-bottom:0.75rem;color:#444}
+.connect-row{display:flex;gap:10px;align-items:flex-end}
+.connect-field{display:flex;flex-direction:column;gap:4px;flex:1}
+.connect-field label{font-size:13px;color:#666}
+.connect-field input{border:1px solid #ccc;border-radius:4px;padding:8px 10px;font-size:15px;width:100%}
+.connect-field input:focus{outline:none;border-color:#4a90e2}
+.btn-connect{background:#4a90e2;color:#fff;border:none;padding:10px 20px;border-radius:4px;font-size:15px;cursor:pointer;font-weight:600;white-space:nowrap;height:40px}
+.btn-connect:hover{background:#357abd}
+.status{font-size:13px;margin-top:8px;padding:7px 10px;border-radius:4px;display:none}
+.status.success{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;display:block}
+.status.error{background:#ffebee;color:#c62828;border:1px solid #ef9a9a;display:block}
+.status.loading{background:#e3f2fd;color:#1565c0;border:1px solid #90caf9;display:block}
+.section{background:#fff;border:1px solid #ddd;border-radius:8px;padding:1rem 1.25rem;margin-bottom:1rem}
+.section-title{font-size:15px;font-weight:700;color:#333;margin-bottom:0.75rem;padding-bottom:0.5rem;border-bottom:2px solid #4a90e2}
+.chapter-title{font-size:19px;font-weight:800;color:#1b5e20;background:#e8f5e9;border-right:5px solid #2e7d32;padding:10px 16px;margin:-1rem -1.25rem 1rem;border-radius:8px 8px 0 0}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:3px}
+.field label{font-size:12px;color:#888}
+.field .val{font-size:16px;font-weight:600;color:#222;padding:6px 0;border-bottom:1px solid #eee;min-height:30px}
+.field .val.empty{color:#bbb;font-weight:400;font-style:italic}
+.order-lines-empty{color:#bbb;font-style:italic;padding:4px 0}
+#order-lines-list{display:flex;flex-direction:column;gap:2px}
+.order-line-item{font-size:14px;color:#333;padding:6px 2px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;gap:10px}
+.order-line-item:last-child{border-bottom:none}
+.order-line-qty{color:#888;font-size:13px;white-space:nowrap}
+.field .val.editable{background:#f9f9f9;border:1px solid #ddd;border-radius:4px;padding:6px 8px;cursor:text}
+.toggle{display:flex;gap:6px}
+.toggle-btn{padding:6px 16px;border-radius:20px;border:1px solid #ddd;background:#f5f5f5;color:#666;font-size:14px;cursor:pointer}
+.toggle-btn.yes{background:#e8f5e9;border-color:#a5d6a7;color:#2e7d32;font-weight:600}
+.toggle-btn.no{background:#ffebee;border-color:#ef9a9a;color:#c62828;font-weight:600}
+.notes-image{max-width:100%;border:1px solid #ddd;border-radius:6px;display:block;margin-top:8px}
+.notes-image-wrap{position:relative;display:inline-block}
+.notes-image-remove{position:absolute;top:4px;left:4px;background:#c62828;color:#fff;border:none;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:14px;line-height:1}
+
+/* טבלת משימות */
+.task-table{width:100%;border-collapse:collapse;font-size:14px}
+.task-table th{background:#f5f7fa;font-weight:700;font-size:12px;color:#555;padding:8px 6px;border:1px solid #ddd;text-align:center}
+.task-table td{border:1px solid #ddd;padding:6px;vertical-align:middle}
+.task-table td.task-desc{text-align:right;font-size:13px;color:#333;min-width:220px}
+.task-table td.task-desc input[type=text]{width:100%;border:1px dashed #ccc;border-radius:4px;padding:5px 6px;font-size:13px;background:#fffde7}
+.task-table select{width:100%;border:1px solid #ddd;border-radius:4px;padding:5px 2px;font-size:12px;background:#f9f9f9;text-align:center}
+.task-table select.status-done{background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7}
+.task-table select.status-pending{background:#fff3e0;color:#e65100;border-color:#ffcc80}
+.task-table input[type=text]{width:100%;border:1px solid #ddd;border-radius:4px;padding:5px 6px;font-size:12px;background:#f9f9f9}
+.task-table input:focus,.task-table select:focus{outline:1px solid #4a90e2}
+.task-table tr.blank-row td.task-desc{background:#fffde7}
+.task-table tr.row-pending{background:#ffebee}
+.task-table tr.row-pending td{border-color:#ef9a9a}
+.task-table tr.row-pending td.task-desc{color:#c62828;font-weight:700}
+
+.sign-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:6px}
+.sign-field{display:flex;flex-direction:column;gap:4px}
+.sign-field label{font-size:12px;color:#888}
+.sign-field input{border:none;border-bottom:1px solid #999;padding:6px 2px;font-size:15px;background:transparent}
+.sign-field input:focus{outline:none;border-color:#4a90e2}
+
+.actions{display:flex;gap:10px;margin-top:1rem;padding-top:1rem;border-top:1px solid #ddd}
+.btn-print{flex:1;padding:12px;background:#333;color:#fff;border:none;border-radius:4px;font-size:16px;cursor:pointer;font-weight:600}
+.btn-print:hover{background:#111}
+.btn-reset{padding:12px 18px;background:#fff;color:#666;border:1px solid #ddd;border-radius:4px;font-size:16px;cursor:pointer}
+
+@media print{
+  .connect-box,.actions,.no-print,.notes-image-remove{display:none!important}
+  .page{padding:0}
+  .section{border:1px solid #ccc;break-inside:avoid}
+  .task-table{font-size:11px}
+}
+@media (max-width:700px){
+  .fields,.sign-grid{grid-template-columns:1fr}
+  .task-table{font-size:11px}
+  .task-table td.task-desc{min-width:120px}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="logo">סדן מעליות — דוח פינישים באחריות סדן</div>
+    <div style="text-align:left;font-size:13px;color:#666" id="form-date"></div>
+  </div>
+
+  <div class="project-banner" id="project-ref"></div>
+
+  <div class="connect-box">
+    <h3>טעינת פרויקט מאודו</h3>
+    <div class="connect-row">
+      <div class="connect-field">
+        <label>מספר הזמנה — אפשר להקליד רק מספר (למשל 224) או המלא (S00224)</label>
+        <input type="text" id="project-ref-input" dir="ltr" placeholder="S00224" onkeydown="if(event.key==='Enter')loadProject()">
+      </div>
+      <button class="btn-connect" onclick="loadProject()">טעינה</button>
+    </div>
+    <div class="status" id="status"></div>
+  </div>
+
+  <!-- פרטי פרויקט -->
+  <div class="section">
+    <div class="section-title">פרטי הפרויקט</div>
+    <div class="fields">
+      <div class="field"><label>שם ומספר הפרויקט</label><div class="val" id="f-name">—</div></div>
+      <div class="field"><label>לקוח</label><div class="val" id="f-customer">—</div></div>
+      <div class="field"><label>שם איש קשר</label><div class="val" id="f-contact-name-auto">—</div></div>
+      <div class="field"><label>טלפון איש קשר</label><div class="val" id="f-client-phone" dir="ltr">—</div></div>
+      <div class="field"><label>מנהל פרויקט</label><div class="val" id="f-pm">—</div></div>
+      <div class="field"><label>כתובת התקנה</label><div class="val" id="f-address">—</div></div>
+      <div class="field"><label>איש קשר לקוח</label><div class="val editable" contenteditable="true" id="f-client-contact"></div></div>
+      <div class="field"><label>שם המתקינים</label><div class="val editable" contenteditable="true" id="f-installers"></div></div>
+      <div class="field"><label>ממלא הדוח</label><div class="val editable" contenteditable="true" id="f-filled-by"></div></div>
+      <div class="field"><label>תאריך מילוי</label><input type="date" class="val editable" id="f-fill-date" style="width:100%"></div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid #eee">
+      <label style="font-size:16px;font-weight:700">סיימנו התקנה</label>
+      <div class="toggle"><button class="toggle-btn" onclick="tog(this,'yes')">כן</button><button class="toggle-btn" onclick="tog(this,'no')">לא</button></div>
+    </div>
+  </div>
+
+  <!-- מוצרים ותוספות בהזמנה (מאודו, ללא מחירים) -->
+  <div class="section">
+    <div class="section-title">מוצרים ותוספות בהזמנה</div>
+    <div id="order-lines-list" class="order-lines-empty">—</div>
+  </div>
+
+  <!-- משימות באחריות סדן -->
+  <div class="section">
+    <div class="chapter-title">פינישים באחריות סדן</div>
+    <table class="task-table" id="tbl-tasks">
+      <thead><tr><th style="width:38%">תיאור המשימה</th><th>סטטוס</th><th>אחראי ביצוע</th><th>הערות</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- הערות כלליות -->
+  <div class="section">
+    <div class="section-title">הערות כלליות</div>
+    <textarea class="val editable" id="f-general-notes" rows="4" style="width:100%" placeholder="ניתן להדביק כאן תמונה עם Ctrl+V"></textarea>
+    <div class="no-print" style="margin-top:10px">
+      <button type="button" class="btn-reset" onclick="document.getElementById('notes-image-input').click()" style="font-size:13px;padding:8px 14px">📎 צרף תמונה</button>
+      <span style="font-size:12px;color:#888;margin-right:8px">או הדביקו תמונה (Ctrl+V) בתוך תיבת ההערות למעלה</span>
+      <input type="file" id="notes-image-input" accept="image/*" style="display:none" onchange="handleImageFile(this.files[0])">
+    </div>
+    <div id="notes-image-preview" style="margin-top:10px"></div>
+    <div class="field" style="margin-top:12px">
+      <label>קישור לוידאו (YouTube / Google Drive וכו')</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="val editable" contenteditable="true" id="f-video-link" dir="ltr" style="text-align:left;flex:1"></div>
+        <button type="button" class="no-print btn-reset" onclick="openVideoLink()" style="font-size:13px;padding:6px 12px;white-space:nowrap">🔗 פתח</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- חתימות -->
+  <div class="section">
+    <div class="section-title">אישור וחתימה</div>
+    <div class="sign-grid">
+      <div class="sign-field"><label>נציג הלקוח</label><input type="text" id="sign-client"></div>
+      <div class="sign-field"><label>נציג סדן</label><input type="text" id="sign-sadan"></div>
+      <div class="sign-field"><label>חתימה</label><input type="text" id="sign-signature"></div>
+      <div class="sign-field"><label>תאריך</label><input type="date" id="sign-date"></div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn-print" onclick="window.print()">🖨️ הדפס / שמור PDF</button>
+    <button class="btn-reset" onclick="resetForm()">נקה</button>
+  </div>
+
+</div>
+
+<script>
+const WORKER_URL = 'https://sadan-installer-proxy.erellaka88.workers.dev';
+
+document.getElementById('form-date').textContent = new Date().toLocaleDateString('he-IL');
+
+function tog(btn, val) {
+  btn.parentElement.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('yes','no'));
+  btn.classList.add(val);
+}
+
+// ==== הדבקת/צירוף תמונה בהערות ====
+function handleImageFile(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = (e) => showNotesImage(e.target.result);
+  reader.readAsDataURL(file);
+}
+
+function showNotesImage(dataUrl) {
+  const preview = document.getElementById('notes-image-preview');
+  preview.innerHTML = `
+    <div class="notes-image-wrap">
+      <img class="notes-image" src="${dataUrl}" alt="תמונה מצורפת">
+      <button type="button" class="notes-image-remove" onclick="document.getElementById('notes-image-preview').innerHTML=''">✕</button>
+    </div>`;
+}
+
+document.getElementById('f-general-notes').addEventListener('paste', (e) => {
+  const items = e.clipboardData?.items || [];
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      const file = item.getAsFile();
+      handleImageFile(file);
+      e.preventDefault();
+      break;
+    }
+  }
+});
+
+function openVideoLink() {
+  let url = document.getElementById('f-video-link').textContent.trim();
+  if (!url) { alert('לא הוזן קישור'); return; }
+  if (!/^https?:\/\//i.test(url)) { url = 'https://' + url; }
+  window.open(url, '_blank');
+}
+
+// ==== רשימת המשימות (תמיד באחריות סדן / קבלן משנה) ====
+const TASKS = [
+  'להתקין לחצנים בקומה 1,2.',
+  'לסגור תעלות בארון פיקוד.',
+  'לסדר כניסה של כבלים וצינור בין ארון לפיר.',
+  'להתקין מראה חדשה בתא.',
+  'קילופים וניקיונות.',
+  'שימון פסים.',
+  'לסדר ספוטים בתא.',
+  'לחווט טלפון בתא.',
+  'לחווט קו טלפון בארון.',
+  'לכוון מגע דלתות קומה עליונה.',
+  'להשלים תעלות לחווט בבור.',
+  'לנקות בור.',
+  'שחר מבקש להגיע לדלת תחנה תחתונה בשביל שיפוע למניעת כניסת מים לפיר.',
+  'להדביק שילוט (אין בשטח).',
+  'לפנות פסולת של התקנה מהשטח.',
+];
+
+const BLANK_ROWS_COUNT = 5;
+
+function buildTaskTable() {
+  const tbody = document.getElementById('tbl-tasks').querySelector('tbody');
+
+  TASKS.forEach(task => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="task-desc">${task}</td>
+      <td>
+        <select onchange="updateStatusColor(this)">
+          <option value="">—</option>
+          <option value="done">בוצע</option>
+          <option value="pending">טרם בוצע</option>
+        </select>
+      </td>
+      <td>
+        <select>
+          <option value="">—</option>
+          <option value="sadan">סדן</option>
+          <option value="sub">קבלן משנה</option>
+        </select>
+      </td>
+      <td><input type="text" placeholder="הערה... (אם קבלן משנה — לציין שם)"></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  for (let i = 0; i < BLANK_ROWS_COUNT; i++) {
+    const tr = document.createElement('tr');
+    tr.className = 'blank-row';
+    tr.innerHTML = `
+      <td class="task-desc"><input type="text" placeholder="משימה נוספת..."></td>
+      <td>
+        <select onchange="updateStatusColor(this)">
+          <option value="">—</option>
+          <option value="done">בוצע</option>
+          <option value="pending">טרם בוצע</option>
+        </select>
+      </td>
+      <td>
+        <select>
+          <option value="">—</option>
+          <option value="sadan">סדן</option>
+          <option value="sub">קבלן משנה</option>
+        </select>
+      </td>
+      <td><input type="text" placeholder="הערה... (אם קבלן משנה — לציין שם)"></td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+function updateStatusColor(select) {
+  select.classList.remove('status-done', 'status-pending');
+  if (select.value === 'done') select.classList.add('status-done');
+  if (select.value === 'pending') select.classList.add('status-pending');
+
+  const row = select.closest('tr');
+  if (row) {
+    row.classList.toggle('row-pending', select.value === 'pending');
+  }
+}
+
+buildTaskTable();
+
+// ==== חיבור לאודו ====
+function setStatus(msg, type) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status ' + type;
+}
+
+function fillField(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (val && val !== false && String(val).trim()) {
+    el.textContent = Array.isArray(val) ? val[1] : val;
+    el.classList.remove('empty');
+  } else {
+    el.textContent = '—';
+    el.classList.add('empty');
+  }
+}
+
+// מציג את שורות ההזמנה (מוצרים ותוספות) - ללא מחירים בכוונה
+function renderOrderLines(lines) {
+  const container = document.getElementById('order-lines-list');
+  if (!lines || lines.length === 0) {
+    container.className = 'order-lines-empty';
+    container.textContent = '—';
+    return;
+  }
+  container.className = '';
+  container.innerHTML = lines.map(line => {
+    const productName = line.product_id ? line.product_id[1] : (line.name || '');
+    const qty = line.product_uom_qty;
+    const qtyStr = (qty && qty !== 1) ? `כמות: ${qty}` : '';
+    return `<div class="order-line-item"><span>${productName}</span><span class="order-line-qty">${qtyStr}</span></div>`;
+  }).join('');
+}
+
+async function loadProject() {
+  let ref = document.getElementById('project-ref-input').value.trim().replace(/[^\x20-\x7E]/g, '');
+  if (/^\d+$/.test(ref)) {
+    ref = 'S' + ref.padStart(5, '0');
+  }
+  document.getElementById('project-ref-input').value = ref;
+  if (!ref) { setStatus('הכנס מספר הזמנה (S00xxx) או מספר פרויקט', 'error'); return; }
+
+  setStatus('מתחבר לאודו...', 'loading');
+
+  try {
+    const resp = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ref })
+    });
+
+    const data = await resp.json();
+
+    if (data.error) {
+      setStatus('שגיאה: ' + (data.error.data?.message || data.error.message || JSON.stringify(data.error)), 'error');
+      return;
+    }
+
+    const records = data.result;
+    if (!records || records.length === 0) {
+      setStatus('לא נמצא פרויקט', 'error');
+      return;
+    }
+
+    const p = records[0];
+    fillField('f-name', p.name);
+    fillField('f-customer', p.partner_id);
+    fillField('f-contact-name-auto', p.contact_name);
+    fillField('f-client-phone', p.contact_phone);
+    renderOrderLines(p.order_lines);
+    fillField('f-pm', p.user_id);
+    fillField('f-address', p.x_studio_delivery_address);
+    // איש קשר לקוח ושם המתקינים אינם נמשכים עדיין מאודו — ממלאים ידנית
+
+    const todayStr = new Date().toLocaleDateString('he-IL');
+    const bannerEl = document.getElementById('project-ref');
+    bannerEl.textContent = p.name + '  —  ' + todayStr;
+    bannerEl.classList.add('show');
+    setStatus('✓ נטען בהצלחה: ' + p.name, 'success');
+
+  } catch(e) {
+    setStatus('שגיאת תקשורת עם השרת: ' + e.message, 'error');
+  }
+}
+
+function resetForm() {
+  document.getElementById('order-lines-list').className = 'order-lines-empty';
+  document.getElementById('order-lines-list').textContent = '—';
+  ['f-name','f-customer','f-contact-name-auto','f-client-phone','f-pm','f-address'].forEach(id => {
+    const el = document.getElementById(id); if(el){ el.textContent='—'; el.classList.add('empty'); }
+  });
+  ['f-client-contact','f-installers','f-filled-by'].forEach(id => { document.getElementById(id).textContent = ''; });
+  document.getElementById('f-fill-date').value = '';
+  document.getElementById('f-general-notes').value = '';
+  document.getElementById('notes-image-preview').innerHTML = '';
+  document.getElementById('notes-image-input').value = '';
+  document.getElementById('f-video-link').textContent = '';
+  document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('yes','no'));
+  document.querySelectorAll('.task-table select').forEach(s => { s.value=''; s.classList.remove('status-done','status-pending'); });
+  document.querySelectorAll('.task-table tr').forEach(tr => tr.classList.remove('row-pending'));
+  document.querySelectorAll('.task-table input[type=text]').forEach(inp => inp.value = '');
+  ['sign-client','sign-sadan','sign-signature','sign-date'].forEach(id => { document.getElementById(id).value = ''; });
+  const bannerEl = document.getElementById('project-ref');
+  bannerEl.textContent = '';
+  bannerEl.classList.remove('show');
+  document.getElementById('status').className = 'status';
+  document.getElementById('project-ref-input').value = '';
+}
+</script>
+</body>
+</html>
