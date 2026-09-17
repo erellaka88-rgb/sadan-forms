@@ -39,6 +39,8 @@ body{font-family:Arial,sans-serif;direction:rtl;background:#f5f5f5;font-size:16p
 .order-line-item{font-size:14px;color:#333;padding:6px 2px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;gap:10px}
 .order-line-item:last-child{border-bottom:none}
 .order-line-qty{color:#888;font-size:13px;white-space:nowrap}
+.order-line-note{font-size:13px;color:#666;font-style:italic;padding:6px 2px;border-bottom:1px dashed #eee}
+.order-line-note:last-child{border-bottom:none}
 .field .val.editable{background:#f9f9f9;border:1px solid #ddd;border-radius:4px;padding:6px 8px;cursor:text}
 .toggle{display:flex;gap:6px}
 .toggle-btn{padding:6px 16px;border-radius:20px;border:1px solid #ddd;background:#f5f5f5;color:#666;font-size:14px;cursor:pointer}
@@ -120,7 +122,7 @@ body{font-family:Arial,sans-serif;direction:rtl;background:#f5f5f5;font-size:16p
       <div class="field"><label>טלפון איש קשר</label><div class="val" id="f-client-phone" dir="ltr">—</div></div>
       <div class="field"><label>מנהל פרויקט</label><div class="val" id="f-pm">—</div></div>
       <div class="field"><label>כתובת התקנה</label><div class="val" id="f-address">—</div></div>
-      <div class="field"><label>איש קשר לקוח</label><div class="val editable" contenteditable="true" id="f-client-contact"></div></div>
+      <div class="field"><label>שם איש קשר בשטח (למלא רק אם שונה מהאמור לעיל)</label><div class="val editable" contenteditable="true" id="f-client-contact"></div></div>
       <div class="field"><label>שם המתקינים</label><div class="val editable" contenteditable="true" id="f-installers"></div></div>
       <div class="field"><label>ממלא הדוח</label><div class="val editable" contenteditable="true" id="f-filled-by"></div></div>
       <div class="field"><label>תאריך מילוי</label><input type="date" class="val editable" id="f-fill-date" style="width:100%"></div>
@@ -333,7 +335,7 @@ function fillField(id, val) {
   }
 }
 
-// מציג את שורות ההזמנה (מוצרים ותוספות) - ללא מחירים בכוונה
+// מציג את שורות ההזמנה (מוצרים ותוספות + הערות חופשיות) - ללא מחירים בכוונה
 function renderOrderLines(lines) {
   const container = document.getElementById('order-lines-list');
   if (!lines || lines.length === 0) {
@@ -343,6 +345,9 @@ function renderOrderLines(lines) {
   }
   container.className = '';
   container.innerHTML = lines.map(line => {
+    if (line.display_type === 'line_note') {
+      return `<div class="order-line-note">${line.name || ''}</div>`;
+    }
     const productName = line.product_id ? line.product_id[1] : (line.name || '');
     const qty = line.product_uom_qty;
     const qtyStr = (qty && qty !== 1) ? `כמות: ${qty}` : '';
@@ -388,7 +393,7 @@ async function loadProject() {
     renderOrderLines(p.order_lines);
     fillField('f-pm', p.user_id);
     fillField('f-address', p.x_studio_delivery_address);
-    // איש קשר לקוח ושם המתקינים אינם נמשכים עדיין מאודו — ממלאים ידנית
+    // איש קשר בשטח ושם המתקינים אינם נמשכים אוטומטית — ממלאים ידנית רק אם שונה
 
     const todayStr = new Date().toLocaleDateString('he-IL');
     const bannerEl = document.getElementById('project-ref');
